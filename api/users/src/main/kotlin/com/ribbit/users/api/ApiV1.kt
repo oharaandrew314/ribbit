@@ -1,9 +1,7 @@
 package com.ribbit.users.api
 
 import com.ribbit.core.RibbitError
-import com.ribbit.users.UserError
 import com.ribbit.users.UserId
-import com.ribbit.users.UserNotFound
 import com.ribbit.users.UserService
 import dev.forkhandles.result4k.get
 import dev.forkhandles.result4k.map
