@@ -1,7 +1,7 @@
 package com.ribbit.users.api
 
-import com.ribbit.core.RibbitError
-import com.ribbit.users.UserId
+import com.ribbit.core.UserId
+import com.ribbit.core.toResponse
 import com.ribbit.users.UserService
 import dev.forkhandles.result4k.get
 import dev.forkhandles.result4k.map
@@ -12,7 +12,7 @@ import org.http4k.contract.div
 import org.http4k.contract.meta
 import org.http4k.core.Method.GET
 import org.http4k.core.Response
-import org.http4k.core.Status
+import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.with
 import org.http4k.lens.Path
@@ -29,6 +29,7 @@ fun usersApiV1(service: UserService): List<ContractRoute> {
         tags += tag
 
         returning(OK, UserDtoV1.lens to UserDtoV1.sample)
+        returning(NOT_FOUND to "user not found")
     } bindContract GET to { userId ->
         {
             service
@@ -41,5 +42,3 @@ fun usersApiV1(service: UserService): List<ContractRoute> {
 
     return listOf(getUser)
 }
-
-fun RibbitError.toResponse() = Response(Status(code, null)).body(reason)

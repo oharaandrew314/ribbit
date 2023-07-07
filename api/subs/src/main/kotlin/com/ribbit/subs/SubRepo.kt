@@ -5,8 +5,6 @@ internal class SubRepo: Iterable<Sub> {
 
     operator fun get(id: SubId) = subs[id]
 
-    operator fun get(name: SubName) = subs.values.find { it.name == name }
-
     override fun iterator() = subs.values.iterator()
 
     operator fun plusAssign(sub: Sub) {

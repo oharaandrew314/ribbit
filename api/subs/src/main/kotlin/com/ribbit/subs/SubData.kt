@@ -1,5 +1,6 @@
 package com.ribbit.subs
 
 data class SubData(
-    val name: SubName
+    val id: SubId,
+    val name: String
 )

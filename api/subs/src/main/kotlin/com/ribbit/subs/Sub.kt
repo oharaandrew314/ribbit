@@ -1,26 +1,20 @@
 package com.ribbit.subs
 
-import dev.forkhandles.values.Base36StringValueFactory
-import dev.forkhandles.values.NonEmptyStringValueFactory
 import dev.forkhandles.values.StringValue
-import dev.forkhandles.values.exactLength
-import io.andrewohara.utils.IdGenerator
+import dev.forkhandles.values.ValueFactory
+import dev.forkhandles.values.and
+import dev.forkhandles.values.maxLength
+import dev.forkhandles.values.minLength
 
 class SubId(value: String): StringValue(value) {
-    companion object: Base36StringValueFactory<SubId>(
+    companion object: ValueFactory<SubId, String>(
         ::SubId,
-        validation = 8.exactLength,
-        parseFn = String::uppercase
-    ) {
-        fun next() = SubId.parse(IdGenerator.nextBase36(8))
-    }
-}
-
-class SubName(value: String): StringValue(value) {
-    companion object: NonEmptyStringValueFactory<SubName>(::SubName) // TODO validation
+        validation = 3.minLength.and(20.maxLength),  // TODO extra validation
+        parseFn = String::lowercase
+    )
 }
 
 data class Sub(
     val id: SubId,
-    val name: SubName
+    val name: String
 )

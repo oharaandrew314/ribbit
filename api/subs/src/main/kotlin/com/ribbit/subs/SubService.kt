@@ -1,5 +1,6 @@
 package com.ribbit.subs
 
+import com.ribbit.core.RibbitError
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.Success
@@ -8,19 +9,15 @@ import org.http4k.cloudnative.env.Environment
 
 class SubService internal constructor(private val subs: SubRepo) {
 
-    fun getSub(id: SubId): Result4k<Sub, SubNotFound> {
-        return subs[id].asResultOr { SubNotFound(id) }
+    fun getSub(id: SubId): Result4k<Sub, RibbitError> {
+        return subs[id].asResultOr { subNotFound(id) }
     }
 
-    fun getSub(name: SubName): Result4k<Sub, SubNameNotFound> {
-        return subs[name].asResultOr { SubNameNotFound(name) }
-    }
-
-    fun create(data: SubData): Result4k<Sub, DuplicateSub> {
-        if (subs[data.name] != null) return Failure(DuplicateSub(data.name))
+    fun createSub(data: SubData): Result4k<Sub, RibbitError> {
+        if (subs[data.id] != null) return Failure(duplicateSub(data.id))
 
         val sub = Sub(
-            id = SubId.next(),
+            id = data.id,
             name = data.name
         )
 

@@ -1,9 +1,7 @@
 package com.ribbit.subs
 
 import com.ribbit.core.RibbitError
+import org.http4k.core.Status
 
-data class SubNotFound(val id: SubId): RibbitError(404, "Sub $id not found")
-
-data class DuplicateSub(val name: SubName): RibbitError(400, "Duplicate sub name: $name")
-
-data class SubNameNotFound(val name: SubName): RibbitError(404, "Sub $name not found")
+fun subNotFound(id: SubId) = RibbitError(Status.NOT_FOUND, "Sub $id not found")
+fun duplicateSub(id: SubId) = RibbitError(Status.BAD_REQUEST, "Duplicate sub: $id")

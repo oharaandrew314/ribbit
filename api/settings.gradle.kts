@@ -22,10 +22,14 @@ dependencyResolutionManagement {
             library("http4k-format-kondor", "org.http4k", "http4k-format-kondor-json").versionRef("http4k")
             library("http4k-cloudnative", "org.http4k", "http4k-cloudnative").versionRef("http4k")
             library("http4k-serverless-lambda", "org.http4k", "http4k-serverless-lambda").versionRef("http4k")
+            library("http4k-testing-kotest", "org.http4k", "http4k-testing-kotest").versionRef("http4k")
+            library("http4k-testing-approval", "org.http4k", "http4k-testing-approval").versionRef("http4k")
 
             //http4k-connect
             library("http4k-connect-amazon-dynamodb", "org.http4k", "http4k-connect-amazon-dynamodb").versionRef("http4k-connect")
             library("http4k-connect-amazon-dynamodb-fake", "org.http4k", "http4k-connect-amazon-dynamodb-fake").versionRef("http4k-connect")
+            library("http4k-connect-amazon-kms", "org.http4k", "http4k-connect-amazon-kms").versionRef("http4k-connect")
+            library("http4k-connect-amazon-kms-fake", "org.http4k", "http4k-connect-amazon-kms-fake").versionRef("http4k-connect")
 
             // forkhandles
             library("forkhandles-time4k", "dev.forkhandles", "time4k").versionRef("forkhandles")
@@ -42,6 +46,8 @@ dependencyResolutionManagement {
 
             // misc
             library("utils", "com.github.oharaandrew314", "service-utils").version("1.3.1")
+            library("nimbus", "com.nimbusds", "nimbus-jose-jwt").version("9.26")
+            library("nimbus-kms", "com.github.oharaandrew314", "nimbus-kms").version("c32275e584")
         }
     }
 }

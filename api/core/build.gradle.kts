@@ -1,9 +1,10 @@
 dependencies {
-    implementation(libs.slf4j.simple)
     api(libs.forkhandles.values4k)
-    api(libs.forkhandles.result4k)
-    implementation(libs.utils)
+    implementation(libs.nimbus)
+    implementation(libs.nimbus.kms)
+    implementation(libs.http4k.connect.amazon.kms)
 
-    testImplementation(libs.kotest.assertions.core)
-    testImplementation(libs.forkhandles.result4k.kotest)
+    testFixturesApi(libs.http4k.core)
+    testFixturesApi(libs.forkhandles.result4k)
+    testFixturesApi(libs.http4k.connect.amazon.kms)
 }

@@ -1,7 +1,7 @@
 package com.ribbit.posts
 
+import com.ribbit.core.UserId
 import com.ribbit.subs.SubId
-import com.ribbit.users.UserId
 
 internal class PostRepo {
     private val posts = mutableMapOf<PostId, Post>()

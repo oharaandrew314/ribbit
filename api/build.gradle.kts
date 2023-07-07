@@ -1,6 +1,7 @@
 plugins {
-    kotlin("jvm") version "1.8.22"
-    id("com.google.devtools.ksp") version "1.8.22-1.0.11"
+    kotlin("jvm") version "1.9.0"
+    id("com.google.devtools.ksp") version "1.9.0-1.0.11"
+    id("java-test-fixtures")
 }
 
 allprojects {
@@ -36,6 +37,7 @@ val kotshiVersion = "2.11.4"
 
 subprojects {
     apply(plugin = "com.google.devtools.ksp")
+    apply(plugin = "java-test-fixtures")
 
     dependencies {
         implementation(kotlin("stdlib"))
@@ -48,8 +50,12 @@ subprojects {
 
 dependencies {
     implementation(project(":users"))
+    implementation(project(":subs"))
+    implementation(project(":posts"))
     implementation(libs.http4k.serverless.lambda)
-    implementation(libs.http4k.format.argo)
     implementation(libs.utils)
     implementation(libs.slf4j.simple)
+    implementation(libs.http4k.format.moshi) {
+        exclude("org.jetbrains.kotlin", "kotlin-reflect")
+    }
 }
