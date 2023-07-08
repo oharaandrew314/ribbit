@@ -3,10 +3,9 @@ package com.ribbit.users
 import com.ribbit.core.AccessToken
 import com.ribbit.core.User
 import com.ribbit.core.UserId
-import io.andrewohara.utils.IdGenerator
 
 fun UserService.create(
-    id: String = IdGenerator.nextBase36(4),
+    id: String,
     name: String = "user$id"
 ): Pair<User, AccessToken> {
     val principal = User(

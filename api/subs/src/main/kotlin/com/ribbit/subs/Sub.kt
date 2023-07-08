@@ -1,5 +1,6 @@
 package com.ribbit.subs
 
+import com.ribbit.core.UserId
 import dev.forkhandles.values.StringValue
 import dev.forkhandles.values.ValueFactory
 import dev.forkhandles.values.and
@@ -16,5 +17,6 @@ class SubId(value: String): StringValue(value) {
 
 data class Sub(
     val id: SubId,
-    val name: String
+    val name: String,
+    val owner: UserId
 )

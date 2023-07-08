@@ -3,11 +3,9 @@ dependencies {
     api(project(":users"))
     api(libs.forkhandles.result4k)
     implementation(libs.utils)
-    implementation(libs.http4k.cloudnative)
-    implementation(libs.http4k.format.moshi) {
-        exclude("org.jetbrains.kotlin", "kotlin-reflect")
-    }
+    implementation(libs.http4k.connect.amazon.dynamodb)
 
-    testImplementation(libs.kotest.assertions.core)
-    testImplementation(libs.forkhandles.result4k.kotest)
+    testImplementation(libs.http4k.connect.amazon.dynamodb.fake)
+    testImplementation(libs.http4k.connect.amazon.kms.fake)
+    testImplementation(testFixtures(project(":core")))
 }

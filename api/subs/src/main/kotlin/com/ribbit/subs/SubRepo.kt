@@ -1,17 +1,18 @@
 package com.ribbit.subs
 
-internal class SubRepo: Iterable<Sub> {
-    private val subs = mutableMapOf<SubId, Sub>()
+import com.ribbit.subs.api.subsJson
+import org.http4k.connect.amazon.dynamodb.DynamoDb
+import org.http4k.connect.amazon.dynamodb.mapper.DynamoDbTableMapper
+import org.http4k.connect.amazon.dynamodb.mapper.tableMapper
+import org.http4k.connect.amazon.dynamodb.model.Attribute
+import org.http4k.connect.amazon.dynamodb.model.TableName
+import org.http4k.connect.amazon.dynamodb.model.value
 
-    operator fun get(id: SubId) = subs[id]
+internal fun DynamoDb.subsTable(name: TableName) = tableMapper<Sub, SubId, Unit>(name, Attribute.value(SubId).required("id"), null, subsJson)
 
-    override fun iterator() = subs.values.iterator()
-
-    operator fun plusAssign(sub: Sub) {
-        subs[sub.id] = sub
-    }
-
-    operator fun minusAssign(sub: Sub) {
-        subs.remove(sub.id)
-    }
+internal class SubRepo(private val table: DynamoDbTableMapper<Sub, SubId, Unit>): Iterable<Sub> {
+    operator fun get(id: SubId) = table[id]
+    override fun iterator() = table.primaryIndex().scan().iterator()
+    operator fun plusAssign(sub: Sub) = table.save(sub)
+    operator fun minusAssign(sub: Sub) = table.delete(sub)
 }

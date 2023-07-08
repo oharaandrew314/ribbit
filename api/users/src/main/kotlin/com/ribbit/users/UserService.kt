@@ -41,14 +41,15 @@ class UserService internal constructor(
 internal val usersTableNameKey = EnvironmentKey.value(TableName).required("USERS_TABLE_NAME")
 internal val googleAudienceKey = EnvironmentKey.required("GOOGLE_AUDIENCE")
 
-fun userService(env: Environment, clock: Clock, aws: HttpHandler): UserService {
-    val issuer = createAuthorizer(env, clock, aws = aws)
+fun userService(env: Environment, clock: Clock, internet: HttpHandler): UserService {
+    val dynamo = DynamoDb.Http(env, http = internet)
+    val issuer = createAuthorizer(env, clock, internet = internet)
 
     val googleAuth = GoogleAuthorizer(
         audience = listOf(googleAudienceKey(env)),
         clock = clock
     )
 
-    val repo = userRepo(DynamoDb.Http(env, http = aws), usersTableNameKey(env))
+    val repo = UserRepo(dynamo.usersTable(env[usersTableNameKey]))
     return UserService(repo, issuer, googleAuth)
 }

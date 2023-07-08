@@ -12,8 +12,8 @@ import com.ribbit.core.Authorizer
 import com.ribbit.core.User
 import com.ribbit.core.UserId
 import dev.aohara.nimbuskms.DeterministicJwtClaimSetVerifier
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.http4k.core.Uri
-import org.slf4j.LoggerFactory
 import java.net.URL
 import java.time.Clock
 
@@ -28,7 +28,7 @@ class GoogleAuthorizer(
     jwkUri: Uri = googleJwkUri
 ): Authorizer {
 
-    private val logger = LoggerFactory.getLogger("authorizer")
+    private val logger = KotlinLogging.logger {}
 
     private val processor = DefaultJWTProcessor<SecurityContext>().apply {
         jwtClaimsSetVerifier = DeterministicJwtClaimSetVerifier(
@@ -47,7 +47,7 @@ class GoogleAuthorizer(
 
     override fun authorize(token: AccessToken) = kotlin
         .runCatching { SignedJWT.parse(token.value).let { processor.process(it, null) } }
-        .onFailure { logger.debug("Failed to process JWT: $it") }
+        .onFailure { logger.debug {"Failed to process JWT: $it" } }
         .map {
             User(
                 id = UserId.parse(it.subject),

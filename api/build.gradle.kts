@@ -12,10 +12,6 @@ allprojects {
         maven { setUrl("https://jitpack.io") }
     }
 
-    dependencies {
-        implementation("org.slf4j:slf4j-api:2.0.7")
-    }
-
     apply(plugin = "kotlin")
 
     tasks.test {
@@ -55,7 +51,4 @@ dependencies {
     implementation(libs.http4k.serverless.lambda)
     implementation(libs.utils)
     implementation(libs.slf4j.simple)
-    implementation(libs.http4k.format.moshi) {
-        exclude("org.jetbrains.kotlin", "kotlin-reflect")
-    }
 }
