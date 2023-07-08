@@ -1,10 +1,5 @@
 rootProject.name = "ribbit-api"
 
-include("core")
-include("posts")
-include("users")
-include("subs")
-
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
