@@ -36,7 +36,7 @@ class TestDriver: HttpHandler {
     private val kms = FakeKMS()
     private val dynamo = FakeDynamoDb()
 
-    val time = Instant.parse("2023-07-06T12:00:00Z")
+    val clock = Instant.parse("2023-07-06T12:00:00Z").toClock()
 
     private val internet = reverseProxy(
         "kms" to kms,
@@ -47,7 +47,7 @@ class TestDriver: HttpHandler {
         AWS_REGION of Region.CA_CENTRAL_1,
         AWS_ACCESS_KEY_ID of AccessKeyId.of("fake-id"),
         AWS_SECRET_ACCESS_KEY of SecretAccessKey.of("fake-value"),
-        Settings.issuer of "ribbit-test",
+        Settings.jwtIssuer of "ribbit-test",
         Settings.googleAudience of "google-ribbit",
         Settings.corsOrigins of listOf("http://localhost"),
         Settings.tokensKeyId of kms.client()
@@ -68,7 +68,7 @@ class TestDriver: HttpHandler {
             .TableDescription.TableName!!
     )
 
-    val service = ribbitService(env, time.toClock(), internet)
+    val service = ribbitService(env, clock, internet)
 
     override fun invoke(request: Request) = service.toApi(env)(request)
 }
@@ -88,10 +88,10 @@ fun TestDriver.issueToken(user: User): AccessToken {
 
 fun TestDriver.createPost(sub: Sub, author: User, id: String, title: String = "post$id", content: String = "Stuff about $title"): Post {
     val post = Post(
-        postId = PostId.of(id),
+        id = PostId.of(id),
         title = title,
         content = content,
-        created = time,
+        created = clock.instant(),
         updated = null,
         authorId = author.id,
         subId = sub.id,

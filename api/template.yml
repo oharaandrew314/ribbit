@@ -3,8 +3,8 @@ Transform: AWS::Serverless-2016-10-31
 Parameters:
   CorsOrigins:
     Type: CommaDelimitedList
-#  JwtAudience:
-#    Type: String
+  JwtAudience:
+    Type: String
 
 Globals:
   Function:
@@ -12,7 +12,6 @@ Globals:
     MemorySize: 2048
     Environment:
       Variables:
-#        recipes_table_name: !Ref Recipes
         CORS_ORIGINS: !Join [ ',', !Ref CorsOrigins ]
 #        jwt_audience: !Ref JwtAudience
         JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1

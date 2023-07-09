@@ -74,9 +74,9 @@ fun ribbitService(
         clock = clock,
         kms = kms,
         keyId = env[Settings.tokensKeyId],
-        audience = listOf(env[Settings.issuer]),
+        audience = listOf(env[Settings.jwtIssuer]),
         duration = Duration.ofHours(1),
-        issuer = env[Settings.issuer]
+        issuer = env[Settings.jwtIssuer]
     )
     val googleAuth = GoogleAuthorizer(
         audience = listOf(env[Settings.googleAudience]),
@@ -87,12 +87,15 @@ fun ribbitService(
     val postsRepo = PostRepo(dynamo.postsTable(env[Settings.postsTableName]))
     val subsRepo = SubRepo(dynamo.subsTable(env[Settings.subsTableName]))
 
+    val userService = UserService(userRepo, authorizer, googleAuth)
+    val subService =  SubService(subsRepo)
+
     return RibbitService(
         authorizer = authorizer,
         issuer = authorizer,
-        users = UserService(userRepo, authorizer, googleAuth),
-        posts = PostService(postsRepo, clock, env[Settings.postsPageSize]),
-        subs = SubService(subsRepo)
+        users = userService,
+        posts = PostService(postsRepo, subService, userService, clock, env[Settings.postsPageSize]),
+        subs = subService
     )
 }
 

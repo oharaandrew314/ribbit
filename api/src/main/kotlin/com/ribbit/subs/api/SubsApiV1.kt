@@ -1,5 +1,6 @@
 package com.ribbit.subs.api
 
+import com.ribbit.posts.lens
 import com.ribbit.subs.SubId
 import com.ribbit.subs.SubService
 import com.ribbit.toResponse
@@ -17,15 +18,12 @@ import org.http4k.core.Method.POST
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.with
-import org.http4k.lens.Path
 import org.http4k.lens.RequestContextLens
-import org.http4k.lens.value
 
 fun subsApiV1(service: SubService, auth: RequestContextLens<User>, bearerAuth: Security): List<ContractRoute> {
     val tag = Tag("Subribbits")
-    val subIdLens = Path.value(SubId).of("sub_id")
 
-    val get = "/subs" / subIdLens meta {
+    val get = "/subs" / SubId.lens meta {
         operationId = "getSubV1"
         summary = "Get Sub"
         tags += tag
