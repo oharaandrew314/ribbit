@@ -2,26 +2,30 @@ import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 
 abstract class LoginProvider {
-  Future login();
+  Future<UserProfile?> silentLogin();
+  Future<UserProfile?> login();
   Future logout();
 }
 
 class WebLoginProvider implements LoginProvider {
   final Auth0Web auth0;
-  final String clientId;
-  final String domain;
   final String redirectUrl;
 
   WebLoginProvider({
     required this.auth0,
-    required this.clientId,
-    required this.domain,
     required this.redirectUrl,
   });
 
   @override
-  Future login() {
-    return auth0.loginWithRedirect(redirectUrl: redirectUrl);
+  Future<UserProfile?> silentLogin() async {
+    final credentials = await auth0.onLoad();
+    return credentials?.user;
+  }
+
+  @override
+  Future<UserProfile?> login() async {
+    await auth0.loginWithRedirect(redirectUrl: redirectUrl);
+    return null;
   }
 
   @override
@@ -32,22 +36,25 @@ class WebLoginProvider implements LoginProvider {
 
 class NativeLoginProvider implements LoginProvider {
   final Auth0 auth0;
-  final String clientId;
-  final String domain;
   final String scheme;
 
   NativeLoginProvider({
     required this.auth0,
-    required this.clientId,
-    required this.domain,
     required this.scheme,
   });
 
   @override
-  Future login() async {
-    await auth0
+  Future<UserProfile?> silentLogin() {
+    return Future.value(null);
+  }
+
+  @override
+  Future<UserProfile?> login() async {
+    final credentials = await auth0
         .webAuthentication(scheme: scheme)
         .login();
+
+    return credentials.user;
   }
 
   @override
