@@ -46,7 +46,7 @@ fun postsApiV1(service: PostService, auth: RequestContextLens<UserId>, bearerAut
     }
 
     val list = "/subs" / SubId.lens / "posts" meta {
-        operationId = "listSUbPosts"
+        operationId = "listSubPosts"
         summary = "List Posts for Sub"
         tags += tag
 

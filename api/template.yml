@@ -3,7 +3,9 @@ Transform: AWS::Serverless-2016-10-31
 Parameters:
   CorsOrigins:
     Type: CommaDelimitedList
-  JwtAudience:
+  JwtAudiences:
+    Type: CommaDelimitedList
+  JwtIssuer:
     Type: String
 
 Globals:
@@ -13,7 +15,11 @@ Globals:
     Environment:
       Variables:
         CORS_ORIGINS: !Join [ ',', !Ref CorsOrigins ]
-#        jwt_audience: !Ref JwtAudience
+        JWT_AUDIENCES: !Join [ ',', !Ref JwtAudiences ]
+        JWT_ISSUER: !Ref JwtIssuer
+        USERS_TABLE_NAME: !Ref Users
+        SUBS_TABLE_NAME: !Ref Subs
+        POSTS_TABLE_NAME: !Ref Posts
         JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
 
 Resources:
@@ -29,31 +35,74 @@ Resources:
       DisableExecuteApiEndpoint: true
 
   ApiHandler:
-    Type: 'AWS::Serverless::Function'
+    Type: AWS::Serverless::Function
     Properties:
       Timeout: 10
       Handler: com.ribbit.Http4kLambdaHandler
       Architectures: [arm64]
-#      Policies:
-#        - DynamoDBCrudPolicy:
-#            TableName: !Ref Recipes
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Users
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Subs
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Posts
       Events:
         HttpApiEvent:
           Type: HttpApi
           Properties:
             ApiId: !Ref Api
 
-#  Recipes:
-#    Type: AWS::DynamoDB::Table
-#    Properties:
-#      BillingMode: PAY_PER_REQUEST
-#      AttributeDefinitions:
-#        - AttributeName: userId
-#          AttributeType: S
-#        - AttributeName: recipeId
-#          AttributeType: S
-#      KeySchema:
-#        - AttributeName: userId
-#          KeyType: HASH
-#        - AttributeName: recipeId
-#          KeyType: RANGE
+  Users:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  Subs:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  Posts:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: subId
+          AttributeType: S
+        - AttributeName: authorId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: sub
+          KeySchema:
+            - AttributeName: subId
+              KeyType: HASH
+            - AttributeName: id
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: author
+          KeySchema:
+            - AttributeName: authorId
+              KeyType: HASH
+            - AttributeName: id
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL

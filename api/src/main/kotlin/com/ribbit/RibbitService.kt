@@ -68,6 +68,9 @@ fun ribbitService(
     keySelector: JWSKeySelector<SecurityContext>? = null
 ): RibbitService {
     val dynamo = DynamoDb.Http(env, http = internet)
+    val jwksUri = env[Settings.jwtIssuer]
+        .scheme("https")
+        .path(".well-known/jwks.json")
 
     val authorizer = jwtAuthorizer(
         clock = clock,
@@ -75,7 +78,7 @@ fun ribbitService(
         issuer = env[Settings.jwtIssuer].toString(),
         keySelector = keySelector ?: JWSVerificationKeySelector(
             JWSAlgorithm.RS256,
-            RemoteJWKSet(URL(env[Settings.jwtIssuer].path(".well-known/jwks.json").toString()))
+            RemoteJWKSet(URL(jwksUri.toString()))
         )
     )
 
