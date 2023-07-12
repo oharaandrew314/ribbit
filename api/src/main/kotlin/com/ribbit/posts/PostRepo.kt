@@ -38,8 +38,8 @@ fun DynamoDb.postsTable(name: TableName) = tableMapper<Post, PostId, Unit>(
 
 class PostRepo(private val table: DynamoDbTableMapper<Post, PostId, Unit>) {
     operator fun get(postId: PostId) = table[postId]
-    operator fun get(subId: SubId) = table.index(subIndex).query(subId)
-    operator fun get(authorId: UserId) = table.index(authorIndex).query(authorId)
+    operator fun get(subId: SubId) = table.index(subIndex).query(subId, scanIndexForward = false)
+    operator fun get(authorId: UserId) = table.index(authorIndex).query(authorId, scanIndexForward = false)
     operator fun plusAssign(post: Post) = table.plusAssign(post)
     operator fun minusAssign(post: Post) = table.minusAssign(post)
 }

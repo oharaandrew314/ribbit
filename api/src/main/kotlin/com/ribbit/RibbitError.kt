@@ -10,6 +10,4 @@ data class CannotEditPost(val id: PostId): RibbitError("Not authorized to edit p
 data class PostNotFound(val id: PostId): RibbitError("Post $id not found")
 data class SubNotFound(val id: SubId): RibbitError("Sub $id not found")
 data class DuplicateSub(val id: SubId): RibbitError("Duplicate sub: $id")
-data object IdpFailure: RibbitError("user not authorized with identity provider")
 data class UserNotFound(val id: UserId): RibbitError("User $id not found")
-

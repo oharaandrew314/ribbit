@@ -1,5 +1,7 @@
 package com.ribbit
 
+import com.github.ksuid.Ksuid
+import com.github.ksuid.KsuidGenerator
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
 import com.nimbusds.jose.crypto.RSASSASigner
@@ -33,6 +35,7 @@ import org.http4k.core.Uri
 import org.http4k.routing.reverseProxy
 import java.security.KeyPairGenerator
 import java.time.Instant
+import java.util.Random
 
 class TestDriver: HttpHandler {
     private val dynamo = FakeDynamoDb()
@@ -45,6 +48,8 @@ class TestDriver: HttpHandler {
     private val internet = reverseProxy(
         "dynamo" to dynamo
     )
+
+    val ksuidGen = KsuidGenerator(Random(1337))
 
     private val env = Environment.defaults(
         AWS_REGION of Region.CA_CENTRAL_1,
@@ -69,7 +74,8 @@ class TestDriver: HttpHandler {
 
     val service = ribbitService(
         env, clock, internet,
-        keySelector = SingleKeyJWSKeySelector(JWSAlgorithm.RS256, keyPair.public)
+        keySelector = SingleKeyJWSKeySelector(JWSAlgorithm.RS256, keyPair.public),
+        ksuidGen = ksuidGen
     )
 
     override fun invoke(request: Request) = service.toApi(env)(request)
@@ -93,25 +99,30 @@ class TestDriver: HttpHandler {
 
         return user to token
     }
+
+    fun createPost(
+        sub: Sub,
+        author: User,
+        id: Ksuid = ksuidGen.newKsuid(clock.instant()),
+        title: String = "post$id",
+        content: String = "Stuff about $title"
+    ): Post {
+        val post = Post(
+            id = PostId.of(id),
+            title = title,
+            content = content,
+            updated = null,
+            authorId = author.id,
+            subId = sub.id,
+        )
+        service.posts.posts += post
+        return post
+    }
 }
 
 fun TestDriver.createSub(owner: User, id: String, name: String = "sub$id"): Sub {
     val data = SubData(id = SubId.of(id), name = name)
     return service.subs.createSub(owner.id, data).valueOrThrow()
-}
-
-fun TestDriver.createPost(sub: Sub, author: User, id: String, title: String = "post$id", content: String = "Stuff about $title"): Post {
-    val post = Post(
-        id = PostId.of(id),
-        title = title,
-        content = content,
-        created = clock.instant(),
-        updated = null,
-        authorId = author.id,
-        subId = sub.id,
-    )
-    service.posts.posts += post
-    return post
 }
 
 fun Request.withToken(token: String) = header("Authorization", "Bearer $token")

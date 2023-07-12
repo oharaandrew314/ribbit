@@ -1,5 +1,6 @@
 package com.ribbit.posts
 
+import com.github.ksuid.KsuidGenerator
 import com.ribbit.CannotEditPost
 import com.ribbit.PostNotFound
 import com.ribbit.RibbitError
@@ -22,13 +23,23 @@ class PostService(
     private val users: UserService,
     private val clock: Clock,
     private val pageSize: Int,
+    private val ksuidGen: KsuidGenerator
 ) {
     fun createPost(userId: UserId, subId: SubId, data: PostData): Result4k<Post, RibbitError> {
         subs.getSub(subId).onFailure { return it }
 
-        return data.newPost(userId, subId, clock.instant())
-            .also { posts += it }
-            .let { Success(it) }
+        val post = Post(
+            id = PostId.of(ksuidGen.newKsuid(clock.instant())),
+            subId = subId,
+            authorId = userId,
+            title = data.title,
+            content = data.content,
+            updated = null
+        )
+
+        posts += post
+
+        return Success(post)
     }
 
     fun getPost(postId: PostId): Result4k<Post, RibbitError> {

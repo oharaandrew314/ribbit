@@ -12,19 +12,10 @@ data class Post(
     val subId: SubId,
     val title: String,
     val content: String,
-    val created: Instant,
     val updated: Instant?
-)
-
-fun PostData.newPost(author: UserId, sub: SubId, time: Instant) = Post(
-    id = PostId.next(),
-    subId = sub,
-    authorId = author,
-    title = title,
-    content = content,
-    created = time,
-    updated = null
-)
+) {
+    val created get() = id.time
+}
 
 fun Post.update(data: PostData, time: Instant) = copy(
     title = data.title,

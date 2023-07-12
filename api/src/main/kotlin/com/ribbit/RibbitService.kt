@@ -1,5 +1,6 @@
 package com.ribbit
 
+import com.github.ksuid.KsuidGenerator
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.jwk.source.RemoteJWKSet
 import com.nimbusds.jose.proc.JWSKeySelector
@@ -57,6 +58,7 @@ import org.http4k.serverless.ApiGatewayV2LambdaFunction
 import org.http4k.serverless.AppLoader
 import java.net.URL
 import java.time.Clock
+import java.util.Random
 
 class RibbitService(
     val authorizer: Authorizer,
@@ -69,7 +71,8 @@ fun ribbitService(
     env: Environment,
     clock: Clock = Clock.systemUTC(),
     internet: HttpHandler = ResponseFilters.logSummary().then(Java8HttpClient()),
-    keySelector: JWSKeySelector<SecurityContext>? = null
+    keySelector: JWSKeySelector<SecurityContext>? = null,
+    ksuidGen: KsuidGenerator = KsuidGenerator(Random())
 ): RibbitService {
     val dynamo = DynamoDb.Http(
         credentialsProvider = (CredentialsChain.Environment(env) orElse CredentialsChain.Profile(env)).provider(),
@@ -94,11 +97,17 @@ fun ribbitService(
 
     val userService = UserService(userRepo)
     val subService =  SubService(subsRepo)
+    val postService = PostService(
+        postsRepo, subService, userService,
+        clock = clock,
+        pageSize = env[Settings.postsPageSize],
+        ksuidGen = ksuidGen
+    )
 
     return RibbitService(
         authorizer = authorizer,
         users = userService,
-        posts = PostService(postsRepo, subService, userService, clock, env[Settings.postsPageSize]),
+        posts = postService,
         subs = subService
     )
 }

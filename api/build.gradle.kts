@@ -40,9 +40,11 @@ dependencies {
     implementation(libs.forkhandles.values4k)
     implementation(libs.nimbus)
     implementation("io.github.oshai:kotlin-logging-jvm:4.0.2")
-    implementation(libs.slf4j.simple)
+    implementation(libs.slf4j.api)
+    runtimeOnly(libs.slf4j.simple)
     implementation("se.ansman.kotshi:api:$kotshiVersion")
     ksp("se.ansman.kotshi:compiler:$kotshiVersion")
+    implementation("com.github.ksuid:ksuid:1.1.2")
 
     testImplementation(kotlin("test"))
     testImplementation(libs.kotest.assertions.core)

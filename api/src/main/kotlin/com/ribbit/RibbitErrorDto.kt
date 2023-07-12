@@ -18,7 +18,6 @@ fun RibbitError.toResponse() = when(this) {
     is PostNotFound -> Response(Status.NOT_FOUND)
     is SubNotFound -> Response(Status.NOT_FOUND)
     is DuplicateSub -> Response(Status.NOT_FOUND)
-    is IdpFailure -> Response(Status.UNAUTHORIZED)
     is UserNotFound -> Response(Status.NOT_FOUND)
     is CannotEditPost -> Response(Status.FORBIDDEN)
 }.with(RibbitErrorDto.lens of RibbitErrorDto(code = javaClass.simpleName, details = message))

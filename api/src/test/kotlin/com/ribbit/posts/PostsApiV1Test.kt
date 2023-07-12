@@ -1,7 +1,6 @@
 package com.ribbit.posts
 
 import com.ribbit.TestDriver
-import com.ribbit.createPost
 import com.ribbit.createSub
 import com.ribbit.posts.api.PostDataDtoV1
 import com.ribbit.posts.api.PostDtoV1
@@ -22,6 +21,7 @@ import org.http4k.core.with
 import org.http4k.kotest.shouldHaveStatus
 import org.http4k.testing.Approver
 import org.http4k.testing.JsonApprovalTest
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.time.Duration
@@ -40,11 +40,11 @@ class PostsApiV1Test {
     private val user2Token = user2Result.second
 
     private val sub1 = driver.createSub(user1, "111")
-    private val post1 = driver.createPost(sub1, user1, "11111111")
-    private val post2 = driver.createPost(sub1, user2, "22222222")
+    private val post1 = driver.createPost(sub1, user1)
+    private val post2 = driver.createPost(sub1, user2)
 
     private val sub2 = driver.createSub(user2, "222")
-    private val post3 = driver.createPost(sub2, user1, "33333333")
+    private val post3 = driver.createPost(sub2, user1)
 
     private val data = PostDataDtoV1(
         title = "frogs are cool",
@@ -64,6 +64,22 @@ class PostsApiV1Test {
         Request(GET, "/subs/missing/posts")
             .let(driver)
             .shouldHaveStatus(NOT_FOUND)
+    }
+
+    @Test
+    @Disabled // FIXME
+    fun `list posts in sub - by latest`(approval: Approver) {
+        val time = driver.clock.instant()
+
+        val sub3 = driver.createSub(user1, "333")
+        driver.createPost(sub3, user1, driver.ksuidGen.newKsuid(time), title = "post 1")
+        driver.createPost(sub3, user1, driver.ksuidGen.newKsuid(time.plusSeconds(1)), title = "post 2")
+        driver.createPost(sub3, user1, driver.ksuidGen.newKsuid(time.plusSeconds(2)), title = "post 3")
+
+        val response = Request(GET, "/subs/${sub3.id}/posts").let(driver)
+
+        response shouldHaveStatus OK
+        approval.assertApproved(response)
     }
 
     @Test
@@ -119,7 +135,6 @@ class PostsApiV1Test {
                 authorId = user1.id,
                 title = "frogs are cool",
                 content = "very cool",
-                created = driver.clock.instant(),
                 updated = null,
                 subId = sub1.id
             )
@@ -146,7 +161,8 @@ class PostsApiV1Test {
 
     @Test
     fun `edit post - not found`(approval: Approver) {
-        val response = Request(PUT, "/posts/99999999")
+        val postId = driver.ksuidGen.newKsuid(driver.clock.instant())
+        val response = Request(PUT, "/posts/$postId")
             .with(PostDataDtoV1.lens of data)
             .withToken(user1Token)
             .let(driver)
@@ -187,7 +203,8 @@ class PostsApiV1Test {
 
     @Test
     fun `delete post - not found`(approval: Approver) {
-        val response = Request(DELETE, "/posts/99999999")
+        val postId = driver.ksuidGen.newKsuid(driver.clock.instant())
+        val response = Request(DELETE, "/posts/$postId")
             .withToken(user1Token)
             .let(driver)
 

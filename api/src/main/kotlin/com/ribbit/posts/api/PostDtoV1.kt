@@ -1,5 +1,6 @@
 package com.ribbit.posts.api
 
+import com.github.ksuid.Ksuid
 import com.ribbit.posts.Post
 import com.ribbit.posts.PostId
 import com.ribbit.ribbitJson
@@ -23,7 +24,7 @@ data class PostDtoV1(
         val manyLens = ribbitJson.autoBody<Array<PostDtoV1>>().toLens()
 
         val sample = PostDtoV1(
-            id = PostId.next(),
+            id = PostId.of(Ksuid.fromString("2SCJo6TLReBpeVSFPmkYAyw7aKi")),
             authorId = UserId.of("user1"),
             subId = SubId.of("frogs"),
             title = "Frogs are cool",
