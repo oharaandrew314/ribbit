@@ -2,6 +2,7 @@ package com.ribbit.users
 
 import dev.forkhandles.values.NonEmptyStringValueFactory
 import dev.forkhandles.values.StringValue
+import se.ansman.kotshi.JsonSerializable
 import java.security.MessageDigest
 import java.util.Base64
 
@@ -19,6 +20,7 @@ class UserId(value: String): StringValue(value) {
     }
 }
 
+@JsonSerializable
 data class User(
     val id: UserId,
     val name: String

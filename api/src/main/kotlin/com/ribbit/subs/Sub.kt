@@ -6,6 +6,7 @@ import dev.forkhandles.values.ValueFactory
 import dev.forkhandles.values.and
 import dev.forkhandles.values.maxLength
 import dev.forkhandles.values.minLength
+import se.ansman.kotshi.JsonSerializable
 
 class SubId(value: String): StringValue(value) {
     companion object: ValueFactory<SubId, String>(
@@ -15,6 +16,7 @@ class SubId(value: String): StringValue(value) {
     )
 }
 
+@JsonSerializable
 data class Sub(
     val id: SubId,
     val name: String,

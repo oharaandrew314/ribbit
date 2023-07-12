@@ -24,6 +24,10 @@ import io.andrewohara.utils.http4k.logErrors
 import io.andrewohara.utils.http4k.logSummary
 import org.http4k.client.Java8HttpClient
 import org.http4k.cloudnative.env.Environment
+import org.http4k.connect.amazon.CredentialsChain
+import org.http4k.connect.amazon.Environment
+import org.http4k.connect.amazon.Profile
+import org.http4k.connect.amazon.RegionProvider
 import org.http4k.connect.amazon.dynamodb.DynamoDb
 import org.http4k.connect.amazon.dynamodb.Http
 import org.http4k.contract.contract
@@ -67,10 +71,12 @@ fun ribbitService(
     internet: HttpHandler = ResponseFilters.logSummary().then(Java8HttpClient()),
     keySelector: JWSKeySelector<SecurityContext>? = null
 ): RibbitService {
-    val dynamo = DynamoDb.Http(env, http = internet)
-    val jwksUri = env[Settings.jwtIssuer]
-        .scheme("https")
-        .path(".well-known/jwks.json")
+    val dynamo = DynamoDb.Http(
+        credentialsProvider = (CredentialsChain.Environment(env) orElse CredentialsChain.Profile(env)).provider(),
+        region = (RegionProvider.Environment(env) orElse RegionProvider.Profile(env)).orElseThrow(),
+        http = internet
+    )
+    val jwkUri = env[Settings.jwtIssuer].path("/.well-known/jwks.json")
 
     val authorizer = jwtAuthorizer(
         clock = clock,
@@ -78,7 +84,7 @@ fun ribbitService(
         issuer = env[Settings.jwtIssuer].toString(),
         keySelector = keySelector ?: JWSVerificationKeySelector(
             JWSAlgorithm.RS256,
-            RemoteJWKSet(URL(jwksUri.toString()))
+            RemoteJWKSet(URL(jwkUri.toString()))
         )
     )
 

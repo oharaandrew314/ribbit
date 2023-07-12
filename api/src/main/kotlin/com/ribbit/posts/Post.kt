@@ -2,8 +2,10 @@ package com.ribbit.posts
 
 import com.ribbit.subs.SubId
 import com.ribbit.users.UserId
+import se.ansman.kotshi.JsonSerializable
 import java.time.Instant
 
+@JsonSerializable
 data class Post(
     val id: PostId,
     val authorId: UserId,
