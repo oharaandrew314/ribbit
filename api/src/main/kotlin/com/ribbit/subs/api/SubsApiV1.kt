@@ -4,7 +4,7 @@ import com.ribbit.posts.lens
 import com.ribbit.subs.SubId
 import com.ribbit.subs.SubService
 import com.ribbit.toResponse
-import com.ribbit.users.User
+import com.ribbit.users.UserId
 import dev.forkhandles.result4k.get
 import dev.forkhandles.result4k.map
 import dev.forkhandles.result4k.mapFailure
@@ -20,7 +20,7 @@ import org.http4k.core.Status.Companion.OK
 import org.http4k.core.with
 import org.http4k.lens.RequestContextLens
 
-fun subsApiV1(service: SubService, auth: RequestContextLens<User>, bearerAuth: Security): List<ContractRoute> {
+fun subsApiV1(service: SubService, auth: RequestContextLens<UserId>, bearerAuth: Security): List<ContractRoute> {
     val tag = Tag("Subribbits")
 
     val get = "/subs" / SubId.lens meta {
@@ -47,7 +47,7 @@ fun subsApiV1(service: SubService, auth: RequestContextLens<User>, bearerAuth: S
         receiving(SubDataDtoV1.lens to SubDataDtoV1.sample)
         returning(OK, SubDtoV1.lens to SubDtoV1.sample)
     } bindContract POST to { request ->
-        service.createSub(auth(request).id, SubDataDtoV1.lens(request).toModel())
+        service.createSub(auth(request), SubDataDtoV1.lens(request).toModel())
             .map { Response(OK).with(SubDtoV1.lens of it.toDtoV1()) }
             .mapFailure { it.toResponse() }
             .get()

@@ -1,8 +1,6 @@
 package com.ribbit.users
 
 import com.ribbit.TestDriver
-import com.ribbit.createUser
-import com.ribbit.issueToken
 import com.ribbit.withToken
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
@@ -21,10 +19,10 @@ class UsersApiV1Test {
 
     @Test
     fun `get user - self`(approve: Approver) {
-        val user = driver.createUser("1")
+        val (user, token) = driver.createUser("1")
 
         val response = Request(GET, "/users/${user.id}")
-            .withToken(driver.issueToken(user))
+            .withToken(token)
             .let(driver)
 
         response shouldHaveStatus OK
@@ -33,7 +31,7 @@ class UsersApiV1Test {
 
     @Test
     fun `get user - unauthenticated`(approve: Approver) {
-        val user = driver.createUser("1")
+        val (user, _) = driver.createUser("1")
 
         val response = Request(GET, "/users/${user.id}")
             .let(driver)
@@ -44,10 +42,10 @@ class UsersApiV1Test {
 
     @Test
     fun `get missing user`() {
-        val user = driver.createUser("2")
+        val (_, token) = driver.createUser("2")
 
         val response = Request(GET, "/users/missing")
-            .withToken(driver.issueToken(user))
+            .withToken(token)
             .let(driver)
 
         response shouldHaveStatus NOT_FOUND

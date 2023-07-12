@@ -19,6 +19,7 @@ class WebLoginProvider implements LoginProvider {
   @override
   Future<UserProfile?> silentLogin() async {
     final credentials = await auth0.onLoad();
+    print(credentials?.idToken);
     return credentials?.user;
   }
 

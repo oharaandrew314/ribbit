@@ -42,7 +42,6 @@ dependencyResolutionManagement {
             // misc
             library("utils", "com.github.oharaandrew314", "service-utils").version("1.3.1")
             library("nimbus", "com.nimbusds", "nimbus-jose-jwt").version("9.26")
-            library("nimbus-kms", "com.github.oharaandrew314", "nimbus-kms").version("c32275e584")
         }
     }
 }

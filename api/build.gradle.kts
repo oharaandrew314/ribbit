@@ -35,12 +35,10 @@ dependencies {
     implementation(libs.http4k.format.moshi) {
         exclude("org.jetbrains.kotlin", "kotlin-reflect")
     }
-    implementation(libs.http4k.connect.amazon.kms)
     implementation(libs.http4k.connect.amazon.dynamodb)
     implementation(libs.forkhandles.result4k)
     implementation(libs.forkhandles.values4k)
     implementation(libs.nimbus)
-    implementation(libs.nimbus.kms)
     implementation("io.github.oshai:kotlin-logging-jvm:4.0.2")
     implementation(libs.slf4j.simple)
     implementation("se.ansman.kotshi:api:$kotshiVersion")
@@ -52,5 +50,4 @@ dependencies {
     testImplementation(libs.http4k.testing.kotest)
     testImplementation(libs.http4k.testing.approval)
     testImplementation(libs.http4k.connect.amazon.dynamodb.fake)
-    testImplementation(libs.http4k.connect.amazon.kms.fake)
 }

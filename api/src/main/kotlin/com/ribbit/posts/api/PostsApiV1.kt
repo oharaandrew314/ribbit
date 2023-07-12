@@ -6,7 +6,6 @@ import com.ribbit.posts.PostService
 import com.ribbit.posts.lens
 import com.ribbit.subs.SubId
 import com.ribbit.toResponse
-import com.ribbit.users.User
 import com.ribbit.users.UserId
 import dev.forkhandles.result4k.get
 import dev.forkhandles.result4k.map
@@ -26,7 +25,7 @@ import org.http4k.core.Status.Companion.OK
 import org.http4k.core.with
 import org.http4k.lens.RequestContextLens
 
-fun postsApiV1(service: PostService, auth: RequestContextLens<User>, bearerAuth: Security): List<ContractRoute> {
+fun postsApiV1(service: PostService, auth: RequestContextLens<UserId>, bearerAuth: Security): List<ContractRoute> {
     val tag = Tag("Posts")
 
     val create = "/subs" / SubId.lens / "posts" meta {
@@ -39,7 +38,7 @@ fun postsApiV1(service: PostService, auth: RequestContextLens<User>, bearerAuth:
         returning(OK, PostDtoV1.lens to PostDtoV1.sample)
     } bindContract POST to { subId, _ ->
         { request ->
-            service.createPost(auth(request).id, subId, PostDataDtoV1.lens(request).toModel())
+            service.createPost(auth(request), subId, PostDataDtoV1.lens(request).toModel())
                 .map { Response(OK).with(PostDtoV1.lens of it.toDtoV1()) }
                 .mapFailure { it.toResponse() }
                 .get()
@@ -87,7 +86,7 @@ fun postsApiV1(service: PostService, auth: RequestContextLens<User>, bearerAuth:
         returning(NOT_FOUND to "post not found")
     } bindContract PUT to { postId ->
         { request ->
-            service.editPost(auth(request).id, postId, PostDataDtoV1.lens(request).toModel())
+            service.editPost(auth(request), postId, PostDataDtoV1.lens(request).toModel())
                 .map { Response(OK).with(PostDtoV1.lens of it.toDtoV1()) }
                 .mapFailure { it.toResponse() }
                 .get()
@@ -120,7 +119,7 @@ fun postsApiV1(service: PostService, auth: RequestContextLens<User>, bearerAuth:
         returning(NOT_FOUND to "post not found")
     } bindContract DELETE to { postId ->
         { request ->
-            service.deletePost(auth(request).id, postId)
+            service.deletePost(auth(request), postId)
                 .map { Response(OK).with(PostDtoV1.lens of it.toDtoV1()) }
                 .mapFailure { it.toResponse() }
                 .get()
