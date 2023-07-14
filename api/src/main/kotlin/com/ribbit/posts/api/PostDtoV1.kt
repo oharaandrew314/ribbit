@@ -1,6 +1,8 @@
 package com.ribbit.posts.api
 
 import com.github.ksuid.Ksuid
+import com.ribbit.core.Cursor
+import com.ribbit.core.CursorDtoV1
 import com.ribbit.posts.Post
 import com.ribbit.posts.PostId
 import com.ribbit.ribbitJson
@@ -21,7 +23,7 @@ data class PostDtoV1(
 ) {
     companion object {
         val lens = ribbitJson.autoBody<PostDtoV1>().toLens()
-        val manyLens = ribbitJson.autoBody<Array<PostDtoV1>>().toLens()
+        val manyLens = ribbitJson.autoBody<PostCursorDtoV1>().toLens()
 
         val sample = PostDtoV1(
             id = PostId.of(Ksuid.fromString("2SCJo6TLReBpeVSFPmkYAyw7aKi")),
@@ -32,10 +34,19 @@ data class PostDtoV1(
             created = Instant.EPOCH,
             updated = Instant.MAX
         )
+        val sampleCursor = PostCursorDtoV1(
+            items = listOf(sample),
+            next = "next_token"
+        )
     }
 }
 
-internal fun Post.toDtoV1() = PostDtoV1(
+data class PostCursorDtoV1(
+    override val items: List<PostDtoV1>,
+    override val next: String?
+): CursorDtoV1<PostDtoV1>
+
+fun Post.toDtoV1() = PostDtoV1(
     id = id,
     authorId = authorId,
     subId = subId,
@@ -43,4 +54,9 @@ internal fun Post.toDtoV1() = PostDtoV1(
     content = content,
     created = created,
     updated = updated
+)
+
+fun Cursor<Post, PostId>.toDtoV1() = PostCursorDtoV1(
+    items = items.map(Post::toDtoV1),
+    next = next?.value?.toString()
 )

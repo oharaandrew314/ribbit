@@ -21,6 +21,7 @@ import org.http4k.core.with
 import org.http4k.kotest.shouldHaveStatus
 import org.http4k.testing.Approver
 import org.http4k.testing.JsonApprovalTest
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.time.Duration
@@ -45,6 +46,12 @@ class PostsApiV1Test {
     private val sub2 = driver.createSub(user2, "222")
     private val post3 = driver.createPost(sub2, user1)
 
+    private val sub3 = driver.createSub(user1, "333").also { sub3 ->
+        driver.createPost(sub3, user1, driver.ksuidGen.newKsuid(driver.clock.instant()), title = "post 1")
+        driver.createPost(sub3, user1, driver.ksuidGen.newKsuid(driver.clock.instant().plusSeconds(1)), title = "post 2")
+        driver.createPost(sub3, user1, driver.ksuidGen.newKsuid(driver.clock.instant().plusSeconds(2)), title = "post 3")
+    }
+
     private val data = PostDataDtoV1(
         title = "frogs are cool",
         content = "very cool"
@@ -67,13 +74,15 @@ class PostsApiV1Test {
 
     @Test
     fun `list posts in sub - by latest`(approval: Approver) {
-        val time = driver.clock.instant()
+        val response = Request(GET, "/subs/${sub3.id}/posts").let(driver)
 
-        val sub3 = driver.createSub(user1, "333")
-        driver.createPost(sub3, user1, driver.ksuidGen.newKsuid(time), title = "post 1")
-        driver.createPost(sub3, user1, driver.ksuidGen.newKsuid(time.plusSeconds(1)), title = "post 2")
-        driver.createPost(sub3, user1, driver.ksuidGen.newKsuid(time.plusSeconds(2)), title = "post 3")
+        response shouldHaveStatus OK
+        approval.assertApproved(response)
+    }
 
+    @Test
+    @Disabled("pagination not yet supported")
+    fun `list posts in sub - page 1 of 2`(approval: Approver) {
         val response = Request(GET, "/subs/${sub3.id}/posts").let(driver)
 
         response shouldHaveStatus OK
@@ -126,7 +135,7 @@ class PostsApiV1Test {
         post.title shouldBe "frogs are cool"
         post.content shouldBe "very cool"
 
-        driver.service.posts.posts[sub1.id].toList().shouldContainExactlyInAnyOrder(
+        driver.service.posts.repo[sub1.id].items().toList().shouldContainExactlyInAnyOrder(
             post1, post2,
             Post(
                 id = post.id,
@@ -181,7 +190,7 @@ class PostsApiV1Test {
         response shouldHaveStatus OK
         approval.assertApproved(response)
 
-        driver.service.posts.posts[post2.id] shouldBe post2.copy(
+        driver.service.posts.repo[post2.id] shouldBe post2.copy(
             title = "frogs are cool",
             content = "very cool",
             updated = driver.clock.instant()
@@ -219,7 +228,7 @@ class PostsApiV1Test {
         response shouldHaveStatus OK
         approval.assertApproved(response)
 
-        driver.service.posts.posts[post3.id].shouldBeNull()
+        driver.service.posts.repo[post3.id].shouldBeNull()
     }
 
     @Test

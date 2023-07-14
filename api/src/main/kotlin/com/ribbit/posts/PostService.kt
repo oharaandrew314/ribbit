@@ -4,6 +4,7 @@ import com.github.ksuid.KsuidGenerator
 import com.ribbit.CannotEditPost
 import com.ribbit.PostNotFound
 import com.ribbit.RibbitError
+import com.ribbit.core.Cursor
 import com.ribbit.subs.SubId
 import com.ribbit.subs.SubService
 import com.ribbit.users.UserId
@@ -18,11 +19,10 @@ import io.andrewohara.utils.result.failIf
 import java.time.Clock
 
 class PostService(
-    val posts: PostRepo,
+    val repo: PostRepo,
     private val subs: SubService,
     private val users: UserService,
     private val clock: Clock,
-    private val pageSize: Int,
     private val ksuidGen: KsuidGenerator
 ) {
     fun createPost(userId: UserId, subId: SubId, data: PostData): Result4k<Post, RibbitError> {
@@ -37,45 +37,37 @@ class PostService(
             updated = null
         )
 
-        posts += post
+        repo += post
 
         return Success(post)
     }
 
     fun getPost(postId: PostId): Result4k<Post, RibbitError> {
-        return posts[postId].asResultOr { PostNotFound(postId) }
+        return repo[postId].asResultOr { PostNotFound(postId) }
     }
 
-    fun getPosts(id: SubId): Result4k<List<Post>, RibbitError> {
-        subs.getSub(id).onFailure { return it }
-
-        return posts[id]
-            .take(pageSize)
-            .toList()
-            .let(::Success)
+    fun getPosts(id: SubId, cursor: PostId? = null): Result4k<Cursor<Post, PostId>, RibbitError> {
+        return subs.getSub(id)
+            .map { repo[id, cursor] }
     }
 
-    fun getPosts(authorId: UserId): Result4k<List<Post>, RibbitError> {
-        users.getUser(authorId).onFailure { return it }
-
-        return posts[authorId]
-            .take(pageSize)
-            .toList()
-            .let(::Success)
+    fun getPosts(authorId: UserId, cursor: PostId? = null): Result4k<Cursor<Post, PostId>, RibbitError> {
+        return users.getUser(authorId)
+            .map { repo[authorId, cursor] }
     }
 
     fun deletePost(editor: UserId, id: PostId): Result4k<Post, RibbitError> {
-        return posts[id]
+        return repo[id]
             .asResultOr { PostNotFound(id) }
             .failIf({it.authorId != editor}, { CannotEditPost(id) })
-            .peek { posts -= it }
+            .peek { repo -= it }
     }
 
     fun editPost(editor: UserId, id: PostId, data: PostData): Result4k<Post, RibbitError> {
-        return posts[id]
+        return repo[id]
             .asResultOr { PostNotFound(id) }
             .failIf({it.authorId != editor}, { CannotEditPost(id) })
             .map { it.update(data, clock.instant()) }
-            .peek { posts += it }
+            .peek { repo += it }
     }
 }

@@ -117,7 +117,7 @@ class TestDriver: HttpHandler {
             authorId = author.id,
             subId = sub.id,
         )
-        service.posts.posts += post
+        service.posts.repo += post
         return post
     }
 }

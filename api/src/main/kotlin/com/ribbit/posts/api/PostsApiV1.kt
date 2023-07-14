@@ -1,6 +1,5 @@
 package com.ribbit.posts.api
 
-import com.ribbit.posts.Post
 import com.ribbit.posts.PostId
 import com.ribbit.posts.PostService
 import com.ribbit.posts.lens
@@ -50,12 +49,12 @@ fun postsApiV1(service: PostService, auth: RequestContextLens<UserId>, bearerAut
         summary = "List Posts for Sub"
         tags += tag
 
-        returning(OK, PostDtoV1.manyLens to arrayOf(PostDtoV1.sample))
+        returning(OK, PostDtoV1.manyLens to PostDtoV1.sampleCursor)
         returning(NOT_FOUND to "sub not found")
     } bindContract GET to { subId, _ ->
         {
             service.getPosts(subId)
-                .map { Response(OK).with(PostDtoV1.manyLens of it.map(Post::toDtoV1).toTypedArray()) }
+                .map { Response(OK).with(PostDtoV1.manyLens of it.toDtoV1()) }
                 .mapFailure { it.toResponse() }
                 .get()
         }
@@ -66,11 +65,11 @@ fun postsApiV1(service: PostService, auth: RequestContextLens<UserId>, bearerAut
         summary = "List Posts for Author"
         tags += tag
 
-        returning(OK, PostDtoV1.manyLens to arrayOf(PostDtoV1.sample))
+        returning(OK, PostDtoV1.manyLens to PostDtoV1.sampleCursor)
     } bindContract GET to { userId, _ ->
         {
             service.getPosts(userId)
-                .map { Response(OK).with(PostDtoV1.manyLens of it.map(Post::toDtoV1).toTypedArray()) }
+                .map { Response(OK).with(PostDtoV1.manyLens of it.toDtoV1()) }
                 .mapFailure { it.toResponse() }
                 .get()
         }

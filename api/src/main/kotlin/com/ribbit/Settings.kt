@@ -9,7 +9,9 @@ import org.http4k.lens.value
 
 object Settings {
     val postsTableName = EnvironmentKey.value(TableName).required("POSTS_TABLE_NAME")
-    val postsPageSize = EnvironmentKey.int().defaulted("POSTS_PAGE_SIZE", 100)
+    val pageSize = EnvironmentKey.int()
+        .map(Int::toUInt, UInt::toInt)
+        .defaulted("PAGE_SIZE", 100u)
     val subsTableName = EnvironmentKey.value(TableName).required("SUBS_TABLE_NAME")
     val usersTableName = EnvironmentKey.value(TableName).required("USERS_TABLE_NAME")
     val corsOrigins = EnvironmentKey.csv().required("CORS_ORIGINS")

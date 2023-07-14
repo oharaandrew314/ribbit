@@ -92,7 +92,7 @@ fun ribbitService(
     )
 
     val userRepo = UserRepo(dynamo.usersTable(env[Settings.usersTableName]))
-    val postsRepo = PostRepo(dynamo.postsTable(env[Settings.postsTableName]))
+    val postsRepo = PostRepo(dynamo.postsTable(env[Settings.postsTableName]), env[Settings.pageSize])
     val subsRepo = SubRepo(dynamo.subsTable(env[Settings.subsTableName]))
 
     val userService = UserService(userRepo)
@@ -100,7 +100,6 @@ fun ribbitService(
     val postService = PostService(
         postsRepo, subService, userService,
         clock = clock,
-        pageSize = env[Settings.postsPageSize],
         ksuidGen = ksuidGen
     )
 
