@@ -72,7 +72,6 @@ fun ribbitService(
     clock: Clock = Clock.systemUTC(),
     internet: HttpHandler = ResponseFilters.logSummary().then(Java8HttpClient()),
     keySelector: JWSKeySelector<SecurityContext>? = null,
-    ksuidGen: KsuidGenerator = KsuidGenerator(Random())
 ): RibbitService {
     val dynamo = DynamoDb.Http(
         credentialsProvider = (CredentialsChain.Environment(env) orElse CredentialsChain.Profile(env)).provider(),
@@ -93,14 +92,14 @@ fun ribbitService(
 
     val userRepo = UserRepo(dynamo.usersTable(env[Settings.usersTableName]))
     val postsRepo = PostRepo(dynamo.postsTable(env[Settings.postsTableName]), env[Settings.pageSize])
-    val subsRepo = SubRepo(dynamo.subsTable(env[Settings.subsTableName]))
+    val subsRepo = SubRepo(dynamo.subsTable(env[Settings.subsTableName]), env[Settings.pageSize])
 
     val userService = UserService(userRepo)
     val subService =  SubService(subsRepo)
     val postService = PostService(
         postsRepo, subService, userService,
         clock = clock,
-        ksuidGen = ksuidGen
+        ksuidGen = KsuidGenerator(env[Settings.randomSeed]?.let(::Random) ?: Random())
     )
 
     return RibbitService(

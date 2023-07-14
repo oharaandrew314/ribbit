@@ -4,6 +4,7 @@ import org.http4k.cloudnative.env.EnvironmentKey
 import org.http4k.connect.amazon.dynamodb.model.TableName
 import org.http4k.lens.csv
 import org.http4k.lens.int
+import org.http4k.lens.long
 import org.http4k.lens.uri
 import org.http4k.lens.value
 
@@ -17,4 +18,5 @@ object Settings {
     val corsOrigins = EnvironmentKey.csv().required("CORS_ORIGINS")
     val jwtIssuer = EnvironmentKey.uri().required("JWT_ISSUER")
     val jwtAudiences = EnvironmentKey.csv().required("JWT_AUDIENCES")
+    val randomSeed = EnvironmentKey.long().optional("RANDOM_SEED")
 }

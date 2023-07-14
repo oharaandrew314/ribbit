@@ -28,8 +28,11 @@ import org.http4k.connect.amazon.AWS_SECRET_ACCESS_KEY
 import org.http4k.connect.amazon.core.model.AccessKeyId
 import org.http4k.connect.amazon.core.model.Region
 import org.http4k.connect.amazon.core.model.SecretAccessKey
+import org.http4k.connect.amazon.dynamodb.DynamoTable
 import org.http4k.connect.amazon.dynamodb.FakeDynamoDb
 import org.http4k.connect.amazon.dynamodb.model.TableName
+import org.http4k.connect.storage.InMemory
+import org.http4k.connect.storage.Storage
 import org.http4k.core.HttpHandler
 import org.http4k.core.Request
 import org.http4k.core.Uri
@@ -39,9 +42,11 @@ import java.time.Instant
 import java.util.Random
 
 class TestDriver: HttpHandler {
-    private val dynamo = FakeDynamoDb()
+    private val tables = Storage.InMemory<DynamoTable>()
+    private val dynamo = FakeDynamoDb(tables)
 
     val clock = Instant.parse("2023-07-06T12:00:00Z").toClock()
+    private val ksuidGen = KsuidGenerator(Random(42))
     private val keyPair = KeyPairGenerator.getInstance("RSA")
         .apply { initialize(2048) }
         .generateKeyPair()
@@ -49,8 +54,6 @@ class TestDriver: HttpHandler {
     private val internet = reverseProxy(
         "dynamo" to dynamo
     )
-
-    val ksuidGen = KsuidGenerator(Random(1337))
 
     private val env = Environment.defaults(
         AWS_REGION of Region.CA_CENTRAL_1,
@@ -71,19 +74,18 @@ class TestDriver: HttpHandler {
         Settings.usersTableName of dynamo.client()
             .usersTable(TableName.of("users")).createTable()
             .valueOrThrow()
-            .TableDescription.TableName!!
+            .TableDescription.TableName!!,
+        Settings.randomSeed of 1337
     )
 
     val service = ribbitService(
         env, clock, internet,
-        keySelector = SingleKeyJWSKeySelector(JWSAlgorithm.RS256, keyPair.public),
-        ksuidGen = ksuidGen
+        keySelector = SingleKeyJWSKeySelector(JWSAlgorithm.RS256, keyPair.public)
     )
 
     override fun invoke(request: Request) = service.toApi(env)(request)
 
     fun createUser(name: String, email: String = "$name@ribbit.test"): Pair<User, String> {
-
         val header = JWSHeader.Builder(JWSAlgorithm.RS256).build()
         val claims = JWTClaimsSet.Builder()
             .audience(env[Settings.jwtAudiences])
@@ -105,10 +107,12 @@ class TestDriver: HttpHandler {
     fun createPost(
         sub: Sub,
         author: User,
-        id: Ksuid = ksuidGen.newKsuid(clock.instant()),
+        time: Instant = clock.instant(),
+        id: Ksuid = ksuidGen.newKsuid(time),
         title: String = "post$id",
         content: String = "Stuff about $title"
     ): Post {
+        println("create post $id")
         val post = Post(
             id = PostId.of(id),
             title = title,

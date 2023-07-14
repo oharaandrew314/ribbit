@@ -1,5 +1,7 @@
 package com.ribbit.subs.api
 
+import com.ribbit.core.Cursor
+import com.ribbit.core.CursorDtoV1
 import com.ribbit.ribbitJson
 import com.ribbit.subs.Sub
 import com.ribbit.subs.SubId
@@ -12,7 +14,6 @@ data class SubDtoV1(
 ) {
     companion object {
         val lens = ribbitJson.autoBody<SubDtoV1>().toLens()
-        val manyLens = ribbitJson.autoBody<Array<SubDtoV1>>().toLens()
 
         val sample = SubDtoV1(
             id = SubId.of("frogs"),
@@ -21,7 +22,25 @@ data class SubDtoV1(
     }
 }
 
+data class SubCursorDtoV1(
+    override val items: List<SubDtoV1>,
+    override val next: String?
+): CursorDtoV1<SubDtoV1> {
+    companion object {
+        val lens = ribbitJson.autoBody<SubCursorDtoV1>().toLens()
+        val sample = SubCursorDtoV1(
+            items = listOf(SubDtoV1.sample),
+            next = "nextSub"
+        )
+    }
+}
+
 fun Sub.toDtoV1() = SubDtoV1(
     id = id,
     name = name
+)
+
+fun Cursor<Sub, SubId>.toDtoV1() = SubCursorDtoV1(
+    items = items.map(Sub::toDtoV1),
+    next = next?.value
 )

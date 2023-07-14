@@ -47,9 +47,9 @@ class PostsApiV1Test {
     private val post3 = driver.createPost(sub2, user1)
 
     private val sub3 = driver.createSub(user1, "333").also { sub3 ->
-        driver.createPost(sub3, user1, driver.ksuidGen.newKsuid(driver.clock.instant()), title = "post 1")
-        driver.createPost(sub3, user1, driver.ksuidGen.newKsuid(driver.clock.instant().plusSeconds(1)), title = "post 2")
-        driver.createPost(sub3, user1, driver.ksuidGen.newKsuid(driver.clock.instant().plusSeconds(2)), title = "post 3")
+        driver.createPost(sub3, user1, driver.clock.instant(), title = "post 4")
+        driver.createPost(sub3, user1, driver.clock.instant().plusSeconds(1), title = "post 5")
+        driver.createPost(sub3, user1, driver.clock.instant().plusSeconds(2), title = "post 6")
     }
 
     private val data = PostDataDtoV1(
@@ -168,8 +168,7 @@ class PostsApiV1Test {
 
     @Test
     fun `edit post - not found`(approval: Approver) {
-        val postId = driver.ksuidGen.newKsuid(driver.clock.instant())
-        val response = Request(PUT, "/posts/$postId")
+        val response = Request(PUT, "/posts/2SaFUudxpuvtl33E6gnd80YyGW4")
             .with(PostDataDtoV1.lens of data)
             .withToken(user1Token)
             .let(driver)
@@ -210,8 +209,7 @@ class PostsApiV1Test {
 
     @Test
     fun `delete post - not found`(approval: Approver) {
-        val postId = driver.ksuidGen.newKsuid(driver.clock.instant())
-        val response = Request(DELETE, "/posts/$postId")
+        val response = Request(DELETE, "/posts/2SaFUudxpuvtl33E6gnd80YyGW4")
             .withToken(user1Token)
             .let(driver)
 

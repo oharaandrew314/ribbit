@@ -28,4 +28,6 @@ class SubService(val subs: SubRepo) {
 
         return Success(sub)
     }
+
+    fun list(cursor: SubId? = null) = subs.list(cursor)
 }

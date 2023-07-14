@@ -13,5 +13,4 @@ fun DynamoDb.usersTable(name: TableName) = tableMapper<User, UserId, Unit>(name,
 class UserRepo internal constructor(private val users: DynamoDbTableMapper<User, UserId, Unit>) {
     operator fun get(id: UserId) = users[id]
     operator fun plusAssign(user: User) = users.save(user)
-    operator fun minusAssign(user: User) = users.delete(user)
 }

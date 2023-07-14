@@ -17,7 +17,7 @@ data class RibbitErrorDto(val code: String, val details: String) {
 fun RibbitError.toResponse() = when(this) {
     is PostNotFound -> Response(Status.NOT_FOUND)
     is SubNotFound -> Response(Status.NOT_FOUND)
-    is DuplicateSub -> Response(Status.NOT_FOUND)
+    is DuplicateSub -> Response(Status.CONFLICT)
     is UserNotFound -> Response(Status.NOT_FOUND)
     is CannotEditPost -> Response(Status.FORBIDDEN)
 }.with(RibbitErrorDto.lens of RibbitErrorDto(code = javaClass.simpleName, details = message))
