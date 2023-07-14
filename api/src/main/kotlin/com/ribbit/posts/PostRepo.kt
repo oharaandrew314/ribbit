@@ -36,6 +36,8 @@ fun DynamoDb.postsTable(name: TableName) = tableMapper<Post, PostId, Unit>(
     autoMarshalling = ribbitJson
 )
 
+fun DynamoDbTableMapper<Post, PostId, Unit>.createWithIndices() = createTable(subIndex, authorIndex)
+
 class PostRepo(private val table: DynamoDbTableMapper<Post, PostId, Unit>) {
     operator fun get(postId: PostId) = table[postId]
     operator fun get(subId: SubId) = table.index(subIndex).query(subId, scanIndexForward = false)

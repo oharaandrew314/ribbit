@@ -21,7 +21,6 @@ import org.http4k.core.with
 import org.http4k.kotest.shouldHaveStatus
 import org.http4k.testing.Approver
 import org.http4k.testing.JsonApprovalTest
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.time.Duration
@@ -67,7 +66,6 @@ class PostsApiV1Test {
     }
 
     @Test
-    @Disabled // FIXME
     fun `list posts in sub - by latest`(approval: Approver) {
         val time = driver.clock.instant()
 

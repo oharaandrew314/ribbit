@@ -10,6 +10,7 @@ import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import com.ribbit.posts.Post
 import com.ribbit.posts.PostId
+import com.ribbit.posts.createWithIndices
 import com.ribbit.posts.postsTable
 import com.ribbit.subs.Sub
 import com.ribbit.subs.SubData
@@ -59,7 +60,8 @@ class TestDriver: HttpHandler {
         Settings.jwtAudiences of listOf("ribbit-test"),
         Settings.corsOrigins of listOf("http://localhost"),
         Settings.postsTableName of dynamo.client()
-            .postsTable(TableName.of("posts")).createTable()
+            .postsTable(TableName.of("posts"))
+            .createWithIndices()
             .valueOrThrow()
             .TableDescription.TableName!!,
         Settings.subsTableName of dynamo.client()
