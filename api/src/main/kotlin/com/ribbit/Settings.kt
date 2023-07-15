@@ -18,5 +18,5 @@ object Settings {
     val corsOrigins = EnvironmentKey.csv().required("CORS_ORIGINS")
     val jwtIssuer = EnvironmentKey.uri().required("JWT_ISSUER")
     val jwtAudiences = EnvironmentKey.csv().required("JWT_AUDIENCES")
-    val randomSeed = EnvironmentKey.long().optional("RANDOM_SEED")
+    val randomSeed = EnvironmentKey.long().defaulted("RANDOM_SEED", System.currentTimeMillis())
 }

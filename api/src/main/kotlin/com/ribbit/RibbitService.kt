@@ -99,7 +99,7 @@ fun ribbitService(
     val postService = PostService(
         postsRepo, subService, userService,
         clock = clock,
-        ksuidGen = KsuidGenerator(env[Settings.randomSeed]?.let(::Random) ?: Random())
+        ksuidGen = KsuidGenerator(Random(env[Settings.randomSeed]))
     )
 
     return RibbitService(
