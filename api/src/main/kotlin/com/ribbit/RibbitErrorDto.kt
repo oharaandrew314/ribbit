@@ -3,7 +3,9 @@ package com.ribbit
 import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.core.with
+import se.ansman.kotshi.JsonSerializable
 
+@JsonSerializable
 data class RibbitErrorDto(val code: String, val details: String) {
     companion object {
         val lens = ribbitJson.autoBody<RibbitErrorDto>().toLens()

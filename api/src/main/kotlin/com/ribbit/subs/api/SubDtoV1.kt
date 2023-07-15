@@ -22,6 +22,7 @@ data class SubDtoV1(
     }
 }
 
+@JsonSerializable
 data class SubCursorDtoV1(
     override val items: List<SubDtoV1>,
     override val next: String?

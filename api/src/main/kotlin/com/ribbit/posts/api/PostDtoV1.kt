@@ -41,6 +41,7 @@ data class PostDtoV1(
     }
 }
 
+@JsonSerializable
 data class PostCursorDtoV1(
     override val items: List<PostDtoV1>,
     override val next: String?
