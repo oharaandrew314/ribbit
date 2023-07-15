@@ -25,3 +25,7 @@ data class User(
     val id: UserId,
     val name: String
 )
+
+data class UserData(
+    val name: String
+)

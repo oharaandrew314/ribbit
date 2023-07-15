@@ -97,9 +97,11 @@ class TestDriver: HttpHandler {
             .apply { sign(RSASSASigner(keyPair.private)) }
             .serialize()
 
-        val userId = service.authorizer(token)!!
-
-        val user = service.users.createUser(userId, name)
+        val user = User(
+            id = service.authorizer(token)!!,
+            name = name
+        )
+        service.users.repo += user
 
         return user to token
     }

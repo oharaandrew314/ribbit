@@ -123,7 +123,7 @@ fun RibbitService.toApi(env: Environment): HttpHandler {
     val security = BearerAuthSecurity(authLens, lookup = authorizer)
 
     val api = contract {
-        routes += usersApiV1(users)
+        routes += usersApiV1(users, authLens, security)
         routes += subsApiV1(subs, authLens, security)
         routes += postsApiV1(posts, authLens, security)
 
