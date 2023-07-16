@@ -31,13 +31,8 @@ class PostsApiV1Test {
 
     private val driver = TestDriver()
 
-    private val user1Result = driver.createUser("1")
-    private val user1 = user1Result.first
-    private val user1Token = user1Result.second
-
-    private val user2Result = driver.createUser("2")
-    private val user2 = user2Result.first
-    private val user2Token = user2Result.second
+    private val user1 = driver.createUser("1")
+    private val user2 = driver.createUser("2")
 
     private val sub1 = driver.createSub(user1, "111")
     private val post1 = driver.createPost(sub1, user1)
@@ -66,10 +61,11 @@ class PostsApiV1Test {
     }
 
     @Test
-    fun `list posts in sub - missing`() {
-        Request(GET, "/subs/missing/posts")
-            .let(driver)
-            .shouldHaveStatus(NOT_FOUND)
+    fun `list posts in sub - missing`(approval: Approver) {
+        val response = Request(GET, "/subs/missing/posts").let(driver)
+
+        response shouldHaveStatus OK
+        approval.assertApproved(response)
     }
 
     @Test
@@ -91,17 +87,18 @@ class PostsApiV1Test {
 
     @Test
     fun `list posts from author`(approval: Approver) {
-        val response = Request(GET, "/users/${user1.id}/posts").let(driver)
+        val response = Request(GET, "/users/${user1.name}/posts").let(driver)
 
         response shouldHaveStatus OK
         approval.assertApproved(response)
     }
 
     @Test
-    fun `list posts from author - missing`() {
-        Request(GET, "/users/missing/posts")
-            .let(driver)
-            .shouldHaveStatus(NOT_FOUND)
+    fun `list posts from author - missing`(approval: Approver) {
+        val response = Request(GET, "/users/missing/posts").let(driver)
+
+        response shouldHaveStatus OK
+        approval.assertApproved(response)
     }
 
     @Test
@@ -123,7 +120,7 @@ class PostsApiV1Test {
     fun `create post`() {
         val response = Request(POST, "/subs/${sub1.id}/posts")
             .with(PostDataDtoV1.lens of data)
-            .withToken(user1Token)
+            .withToken(driver.createToken(user1))
             .let(driver)
 
         response shouldHaveStatus OK
@@ -131,7 +128,7 @@ class PostsApiV1Test {
 
         post.created shouldBe driver.clock.instant()
         post.updated.shouldBeNull()
-        post.authorId shouldBe user1.id
+        post.authorName shouldBe user1.name
         post.title shouldBe "frogs are cool"
         post.content shouldBe "very cool"
 
@@ -139,7 +136,7 @@ class PostsApiV1Test {
             post1, post2,
             Post(
                 id = post.id,
-                authorId = user1.id,
+                authorName = user1.name,
                 title = "frogs are cool",
                 content = "very cool",
                 updated = null,
@@ -152,7 +149,7 @@ class PostsApiV1Test {
     fun `create post - missing sub`() {
         Request(POST, "/subs/missing/posts")
             .with(PostDataDtoV1.lens of data)
-            .withToken(user1Token)
+            .withToken(driver.createToken(user1))
             .let(driver)
             .shouldHaveStatus(NOT_FOUND)
     }
@@ -170,7 +167,7 @@ class PostsApiV1Test {
     fun `edit post - not found`(approval: Approver) {
         val response = Request(PUT, "/posts/2SaFUudxpuvtl33E6gnd80YyGW4")
             .with(PostDataDtoV1.lens of data)
-            .withToken(user1Token)
+            .withToken(driver.createToken(user1))
             .let(driver)
 
         response shouldHaveStatus NOT_FOUND
@@ -183,7 +180,7 @@ class PostsApiV1Test {
 
         val response = Request(PUT, "/posts/${post2.id}")
             .with(PostDataDtoV1.lens of data)
-            .withToken(user2Token)
+            .withToken(driver.createToken(user2))
             .let(driver)
 
         response shouldHaveStatus OK
@@ -200,7 +197,7 @@ class PostsApiV1Test {
     fun `edit post - not author`(approval: Approver) {
         val response = Request(PUT, "/posts/${post2.id}")
             .with(PostDataDtoV1.lens of data)
-            .withToken(user1Token)
+            .withToken(driver.createToken(user1))
             .let(driver)
 
         response shouldHaveStatus FORBIDDEN
@@ -210,7 +207,7 @@ class PostsApiV1Test {
     @Test
     fun `delete post - not found`(approval: Approver) {
         val response = Request(DELETE, "/posts/2SaFUudxpuvtl33E6gnd80YyGW4")
-            .withToken(user1Token)
+            .withToken(driver.createToken(user1))
             .let(driver)
 
         response shouldHaveStatus NOT_FOUND
@@ -220,7 +217,7 @@ class PostsApiV1Test {
     @Test
     fun `delete post`(approval: Approver) {
         val response = Request(DELETE, "/posts/${post3.id}")
-            .withToken(user1Token)
+            .withToken(driver.createToken(user1))
             .let(driver)
 
         response shouldHaveStatus OK
@@ -232,7 +229,7 @@ class PostsApiV1Test {
     @Test
     fun `delete post - not author`(approval: Approver) {
         val response = Request(DELETE, "/posts/${post1.id}")
-            .withToken(user2Token)
+            .withToken(driver.createToken(user2))
             .let(driver)
 
         response shouldHaveStatus FORBIDDEN

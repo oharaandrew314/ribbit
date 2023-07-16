@@ -1,7 +1,9 @@
 package com.ribbit
 
 import org.http4k.core.Response
-import org.http4k.core.Status
+import org.http4k.core.Status.Companion.CONFLICT
+import org.http4k.core.Status.Companion.FORBIDDEN
+import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.with
 import se.ansman.kotshi.JsonSerializable
 
@@ -17,9 +19,13 @@ data class RibbitErrorDto(val code: String, val details: String) {
 }
 
 fun RibbitError.toResponse() = when(this) {
-    is PostNotFound -> Response(Status.NOT_FOUND)
-    is SubNotFound -> Response(Status.NOT_FOUND)
-    is DuplicateSub -> Response(Status.CONFLICT)
-    is UserNotFound -> Response(Status.NOT_FOUND)
-    is CannotEditPost -> Response(Status.FORBIDDEN)
+    is PostNotFound -> Response(NOT_FOUND)
+    is SubNotFound -> Response(NOT_FOUND)
+    is DuplicateSub -> Response(CONFLICT)
+    is UserNotFound -> Response(NOT_FOUND)
+    is CannotEditPost -> Response(FORBIDDEN)
+    CannotChangeUsername -> Response(FORBIDDEN)
+    is CannotCreatePost -> Response(FORBIDDEN)
+    is DuplicateUsername -> Response(CONFLICT)
+    CannotCreateSub -> Response(FORBIDDEN)
 }.with(RibbitErrorDto.lens of RibbitErrorDto(code = javaClass.simpleName, details = message))

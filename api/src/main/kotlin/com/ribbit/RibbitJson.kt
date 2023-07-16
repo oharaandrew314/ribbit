@@ -2,7 +2,8 @@ package com.ribbit
 
 import com.ribbit.posts.PostId
 import com.ribbit.subs.SubId
-import com.ribbit.users.UserId
+import com.ribbit.users.EmailHash
+import com.ribbit.users.Username
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import org.http4k.format.ConfigurableMoshi
@@ -23,8 +24,9 @@ val ribbitJson = ConfigurableMoshi(
         .add(MapAdapter)
         .asConfigurable()
         .withStandardMappings()
-        .value(UserId)
         .value(SubId)
         .value(PostId)
+        .value(Username)
+        .value(EmailHash)
         .done()
 )

@@ -3,7 +3,7 @@ package com.ribbit.posts
 import com.ribbit.core.Cursor
 import com.ribbit.ribbitJson
 import com.ribbit.subs.SubId
-import com.ribbit.users.UserId
+import com.ribbit.users.Username
 import org.http4k.connect.amazon.dynamodb.DynamoDb
 import org.http4k.connect.amazon.dynamodb.mapper.DynamoDbTableMapper
 import org.http4k.connect.amazon.dynamodb.mapper.DynamoDbTableMapperSchema
@@ -19,15 +19,15 @@ private val primaryIndex = DynamoDbTableMapperSchema.Primary(
     hashKeyAttribute = Attribute.value(PostId).required("id")
 )
 
-private val subIndex = DynamoDbTableMapperSchema.GlobalSecondary(
+val postsSubIndex = DynamoDbTableMapperSchema.GlobalSecondary(
     indexName = IndexName.of("sub"),
     hashKeyAttribute = Attribute.value(SubId).required("subId"),
     sortKeyAttribute = Attribute.value(PostId).required("id")
 )
 
-private val authorIndex =  DynamoDbTableMapperSchema.GlobalSecondary(
+val postsAuthorIndex =  DynamoDbTableMapperSchema.GlobalSecondary(
     indexName = IndexName.of("author"),
-    hashKeyAttribute = Attribute.value(UserId).required("authorId"),
+    hashKeyAttribute = Attribute.value(Username).required("authorName"),
     sortKeyAttribute = Attribute.value(PostId).required("id")
 )
 
@@ -36,8 +36,6 @@ fun DynamoDb.postsTable(name: TableName) = tableMapper<Post, PostId, Unit>(
     primarySchema = primaryIndex,
     autoMarshalling = ribbitJson
 )
-
-fun DynamoDbTableMapper<Post, PostId, Unit>.createWithIndices() = createTable(subIndex, authorIndex)
 
 class PostRepo(
     private val table: DynamoDbTableMapper<Post, PostId, Unit>,
@@ -48,7 +46,7 @@ class PostRepo(
     operator fun get(subId: SubId, cursor: PostId? = null): Cursor<Post, PostId> {
         // TODO support cursor
         println(cursor)
-        val items = table.index(subIndex).query(subId, scanIndexForward = false)
+        val items = table.index(postsSubIndex).query(subId, scanIndexForward = false)
             .take(pageSize.toInt())
             .toList()
 
@@ -59,17 +57,17 @@ class PostRepo(
         )
     }
 
-    operator fun get(authorId: UserId, cursor: PostId? = null): Cursor<Post, PostId> {
+    operator fun get(author: Username, cursor: PostId? = null): Cursor<Post, PostId> {
         // TODO support cursor
         println(cursor)
-        val items = table.index(authorIndex).query(authorId, scanIndexForward = false)
+        val items = table.index(postsAuthorIndex).query(author, scanIndexForward = false)
             .take(pageSize.toInt())
             .toList()
 
         return Cursor(
             items = items,
             next = null,
-            getPage = { get(authorId, it) }
+            getPage = { get(author, it) }
         )
     }
     operator fun plusAssign(post: Post) = table.plusAssign(post)

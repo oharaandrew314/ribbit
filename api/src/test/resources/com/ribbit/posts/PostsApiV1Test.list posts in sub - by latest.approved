@@ -2,7 +2,7 @@
   "items": [
     {
       "id": "2SCJoLUEASN7OXYDX6FkiZO1DhM",
-      "authorId": "0BHJVDjwptqeDHxcQZ6RzvXcYlo",
+      "authorName": "1",
       "subId": "333",
       "title": "post 6",
       "content": "Stuff about post 6",
@@ -10,7 +10,7 @@
     },
     {
       "id": "2SCJoEUcmYgQj3MtzK0wagL1GTY",
-      "authorId": "0BHJVDjwptqeDHxcQZ6RzvXcYlo",
+      "authorName": "1",
       "subId": "333",
       "title": "post 5",
       "content": "Stuff about post 5",
@@ -18,7 +18,7 @@
     },
     {
       "id": "2SCJnzslJMV502gmPXLhMwKHvNH",
-      "authorId": "0BHJVDjwptqeDHxcQZ6RzvXcYlo",
+      "authorName": "1",
       "subId": "333",
       "title": "post 4",
       "content": "Stuff about post 4",

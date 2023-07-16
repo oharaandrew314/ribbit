@@ -6,7 +6,11 @@ import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier
 import com.nimbusds.jwt.proc.DefaultJWTProcessor
-import com.ribbit.users.UserId
+import com.ribbit.users.EmailHash
+import dev.forkhandles.result4k.map
+import dev.forkhandles.result4k.peekFailure
+import dev.forkhandles.result4k.resultFrom
+import dev.forkhandles.result4k.valueOrNull
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Clock
 import java.util.Date
@@ -19,7 +23,7 @@ private class DeterministicJwtClaimSetVerifier(
     override fun currentTime(): Date = Date.from(clock.instant())
 }
 
-fun interface Authorizer: (String) -> UserId?
+fun interface Authorizer: (String) -> EmailHash?
 
 fun jwtAuthorizer(
     audience: List<String>,
@@ -43,12 +47,12 @@ fun jwtAuthorizer(
     }
 
     return Authorizer { token ->
-        runCatching { SignedJWT.parse(token).let { processor.process(it, null) } }
-            .onFailure { logger.debug { "Failed to process JWT: $it" } }
+        resultFrom { SignedJWT.parse(token).let { processor.process(it, null) } }
+            .peekFailure { logger.debug { "Failed to process JWT: $it" } }
             .map { claims ->
                 val email = claims.claims.getValue("email").toString()
-                UserId.fromEmail(email)
+                EmailHash.fromEmail(email)
             }
-            .getOrNull()
+            .valueOrNull()
     }
 }

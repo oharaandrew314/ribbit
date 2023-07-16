@@ -16,7 +16,7 @@ import com.ribbit.subs.SubRepo
 import com.ribbit.subs.SubService
 import com.ribbit.subs.api.subsApiV1
 import com.ribbit.subs.subsTable
-import com.ribbit.users.UserId
+import com.ribbit.users.EmailHash
 import com.ribbit.users.UserRepo
 import com.ribbit.users.UserService
 import com.ribbit.users.api.usersApiV1
@@ -80,6 +80,10 @@ fun ribbitService(
     )
     val jwkUri = env[Settings.jwtIssuer].path("/.well-known/jwks.json")
 
+    val userRepo = UserRepo(dynamo.usersTable(env[Settings.usersTableName]))
+    val postsRepo = PostRepo(dynamo.postsTable(env[Settings.postsTableName]), env[Settings.pageSize])
+    val subsRepo = SubRepo(dynamo.subsTable(env[Settings.subsTableName]), env[Settings.pageSize])
+
     val authorizer = jwtAuthorizer(
         clock = clock,
         audience = env[Settings.jwtAudiences],
@@ -89,24 +93,15 @@ fun ribbitService(
             RemoteJWKSet(URL(jwkUri.toString()))
         )
     )
-
-    val userRepo = UserRepo(dynamo.usersTable(env[Settings.usersTableName]))
-    val postsRepo = PostRepo(dynamo.postsTable(env[Settings.postsTableName]), env[Settings.pageSize])
-    val subsRepo = SubRepo(dynamo.subsTable(env[Settings.subsTableName]), env[Settings.pageSize])
-
-    val userService = UserService(userRepo)
-    val subService =  SubService(subsRepo)
-    val postService = PostService(
-        postsRepo, subService, userService,
-        clock = clock,
-        ksuidGen = KsuidGenerator(Random(env[Settings.randomSeed]))
-    )
-
     return RibbitService(
         authorizer = authorizer,
-        users = userService,
-        posts = postService,
-        subs = subService
+        users = UserService(userRepo),
+        posts = PostService(
+            postsRepo, subsRepo, userRepo,
+            clock = clock,
+            ksuidGen = KsuidGenerator(Random(env[Settings.randomSeed]))
+        ),
+        subs = SubService(subsRepo, userRepo)
     )
 }
 
@@ -118,7 +113,7 @@ fun RibbitService.toApi(env: Environment): HttpHandler {
     )
 
     val contexts = RequestContexts()
-    val authLens = RequestContextKey.required<UserId>(contexts, "ribbit-auth")
+    val authLens = RequestContextKey.required<EmailHash>(contexts, "ribbit-auth")
 
     val security = BearerAuthSecurity(authLens, lookup = authorizer)
 

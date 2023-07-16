@@ -3,10 +3,9 @@ package com.ribbit.users
 import com.ribbit.TestDriver
 import com.ribbit.users.api.UserDataDtoV1
 import com.ribbit.withToken
-import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.http4k.core.Method.GET
-import org.http4k.core.Method.PUT
+import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
@@ -25,10 +24,10 @@ class UsersApiV1Test {
 
     @Test
     fun `get user - self`(approve: Approver) {
-        val (user, token) = driver.createUser("1")
+        val user = driver.createUser("1")
 
-        val response = Request(GET, "/users/${user.id}")
-            .withToken(token)
+        val response = Request(GET, "/users/${user.name}")
+            .withToken(driver.createToken(user))
             .let(driver)
 
         response shouldHaveStatus OK
@@ -37,9 +36,9 @@ class UsersApiV1Test {
 
     @Test
     fun `get user - unauthenticated`(approve: Approver) {
-        val (user, _) = driver.createUser("1")
+        val user = driver.createUser("1")
 
-        val response = Request(GET, "/users/${user.id}")
+        val response = Request(GET, "/users/${user.name}")
             .let(driver)
 
         response shouldHaveStatus OK
@@ -48,7 +47,7 @@ class UsersApiV1Test {
 
     @Test
     fun `get missing user`(approval: Approver) {
-        val (_, token) = driver.createUser("2")
+        val token = driver.createToken("2")
 
         val response = Request(GET, "/users/missing")
             .withToken(token)
@@ -59,8 +58,8 @@ class UsersApiV1Test {
     }
 
     @Test
-    fun `update profile - unauthenticated`() {
-        val response = Request(PUT, "/users")
+    fun `create profile - unauthenticated`() {
+        val response = Request(POST, "/users")
             .with(UserDataDtoV1.lens of UserDataDtoV1.sample)
             .let(driver)
 
@@ -68,19 +67,20 @@ class UsersApiV1Test {
     }
 
     @Test
-    fun `update profile - success`(approval: Approver) {
-        val (user, token) = driver.createUser("3")
+    fun `create profile - success`(approval: Approver) {
+        val token = driver.createToken("1")
 
-        val response = Request(PUT, "/users")
-            .with(UserDataDtoV1.lens of UserDataDtoV1("foo"))
+        val response = Request(POST, "/users")
+            .with(UserDataDtoV1.lens of UserDataDtoV1(Username.of("foo")))
             .withToken(token)
             .let(driver)
 
         response shouldHaveStatus OK
         approval.assertApproved(response)
 
-        driver.service.users.repo[user.id]
-            .shouldNotBeNull()
-            .name shouldBe "foo"
+        driver.service.users.repo[Username.of("foo")] shouldBe User(
+            emailHash = EmailHash.of("qWak7RfmrlLD7Daz6bsozkJKcw"),
+            name = Username.of("foo")
+        )
     }
 }

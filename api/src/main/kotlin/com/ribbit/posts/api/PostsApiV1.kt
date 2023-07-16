@@ -5,7 +5,8 @@ import com.ribbit.posts.PostService
 import com.ribbit.posts.lens
 import com.ribbit.subs.SubId
 import com.ribbit.toResponse
-import com.ribbit.users.UserId
+import com.ribbit.users.EmailHash
+import com.ribbit.users.Username
 import dev.forkhandles.result4k.get
 import dev.forkhandles.result4k.map
 import dev.forkhandles.result4k.mapFailure
@@ -24,7 +25,7 @@ import org.http4k.core.Status.Companion.OK
 import org.http4k.core.with
 import org.http4k.lens.RequestContextLens
 
-fun postsApiV1(service: PostService, auth: RequestContextLens<UserId>, bearerAuth: Security): List<ContractRoute> {
+fun postsApiV1(service: PostService, auth: RequestContextLens<EmailHash>, bearerAuth: Security): List<ContractRoute> {
     val tag = Tag("Posts")
 
     val create = "/subs" / SubId.lens / "posts" meta {
@@ -60,7 +61,7 @@ fun postsApiV1(service: PostService, auth: RequestContextLens<UserId>, bearerAut
         }
     }
 
-    val listByAuthor = "/users" / UserId.lens / "posts" meta {
+    val listByAuthor = "/users" / Username.lens / "posts" meta {
         operationId = "listPostsByAuthor"
         summary = "List Posts for Author"
         tags += tag

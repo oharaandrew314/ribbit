@@ -10,13 +10,18 @@ import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import com.ribbit.posts.Post
 import com.ribbit.posts.PostId
-import com.ribbit.posts.createWithIndices
+import com.ribbit.posts.postsAuthorIndex
+import com.ribbit.posts.postsSubIndex
 import com.ribbit.posts.postsTable
 import com.ribbit.subs.Sub
 import com.ribbit.subs.SubData
 import com.ribbit.subs.SubId
 import com.ribbit.subs.subsTable
+import com.ribbit.users.EmailHash
 import com.ribbit.users.User
+import com.ribbit.users.UserData
+import com.ribbit.users.Username
+import com.ribbit.users.userNamesIndex
 import com.ribbit.users.usersTable
 import dev.forkhandles.result4k.Result4k
 import dev.forkhandles.result4k.onFailure
@@ -64,7 +69,7 @@ class TestDriver: HttpHandler {
         Settings.corsOrigins of listOf("http://localhost"),
         Settings.postsTableName of dynamo.client()
             .postsTable(TableName.of("posts"))
-            .createWithIndices()
+            .createTable(postsSubIndex, postsAuthorIndex)
             .valueOrThrow()
             .TableDescription.TableName!!,
         Settings.subsTableName of dynamo.client()
@@ -72,7 +77,8 @@ class TestDriver: HttpHandler {
             .valueOrThrow()
             .TableDescription.TableName!!,
         Settings.usersTableName of dynamo.client()
-            .usersTable(TableName.of("users")).createTable()
+            .usersTable(TableName.of("users"))
+            .createTable(userNamesIndex)
             .valueOrThrow()
             .TableDescription.TableName!!,
         Settings.randomSeed of 1337
@@ -85,25 +91,26 @@ class TestDriver: HttpHandler {
 
     override fun invoke(request: Request) = service.toApi(env)(request)
 
-    fun createUser(name: String, email: String = "$name@ribbit.test"): Pair<User, String> {
+    fun createUser(name: String): User {
+        return service.users.create(
+            emailHash = EmailHash.fromEmail("$name@ribbit.com"),
+            data = UserData(name = Username.of(name))
+        ).valueOrThrow()
+    }
+
+    fun createToken(user: User) = createToken(user.name.value)
+
+    fun createToken(name: String): String {
         val header = JWSHeader.Builder(JWSAlgorithm.RS256).build()
         val claims = JWTClaimsSet.Builder()
             .audience(env[Settings.jwtAudiences])
             .issuer(env[Settings.jwtIssuer].toString())
-            .claim("email", email)
+            .claim("email", "$name@ribbit.com")
             .build()
 
-        val token = SignedJWT(header, claims)
+        return SignedJWT(header, claims)
             .apply { sign(RSASSASigner(keyPair.private)) }
             .serialize()
-
-        val user = User(
-            id = service.authorizer(token)!!,
-            name = name
-        )
-        service.users.repo += user
-
-        return user to token
     }
 
     fun createPost(
@@ -120,7 +127,7 @@ class TestDriver: HttpHandler {
             title = title,
             content = content,
             updated = null,
-            authorId = author.id,
+            authorName = author.name,
             subId = sub.id,
         )
         service.posts.repo += post
@@ -130,7 +137,7 @@ class TestDriver: HttpHandler {
 
 fun TestDriver.createSub(owner: User, id: String, name: String = "sub$id"): Sub {
     val data = SubData(id = SubId.of(id), name = name)
-    return service.subs.createSub(owner.id, data).valueOrThrow()
+    return service.subs.createSub(owner.emailHash, data).valueOrThrow()
 }
 
 fun Request.withToken(token: String) = header("Authorization", "Bearer $token")

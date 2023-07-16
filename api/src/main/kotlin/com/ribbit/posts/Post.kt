@@ -1,14 +1,14 @@
 package com.ribbit.posts
 
 import com.ribbit.subs.SubId
-import com.ribbit.users.UserId
+import com.ribbit.users.Username
 import se.ansman.kotshi.JsonSerializable
 import java.time.Instant
 
 @JsonSerializable
 data class Post(
     val id: PostId,
-    val authorId: UserId,
+    val authorName: Username,
     val subId: SubId,
     val title: String,
     val content: String,

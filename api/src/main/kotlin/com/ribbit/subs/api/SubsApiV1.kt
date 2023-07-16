@@ -5,7 +5,7 @@ import com.ribbit.posts.lens
 import com.ribbit.subs.SubId
 import com.ribbit.subs.SubService
 import com.ribbit.toResponse
-import com.ribbit.users.UserId
+import com.ribbit.users.EmailHash
 import dev.forkhandles.result4k.get
 import dev.forkhandles.result4k.map
 import dev.forkhandles.result4k.mapFailure
@@ -22,7 +22,7 @@ import org.http4k.core.Status.Companion.OK
 import org.http4k.core.with
 import org.http4k.lens.RequestContextLens
 
-fun subsApiV1(service: SubService, auth: RequestContextLens<UserId>, bearerAuth: Security): List<ContractRoute> {
+fun subsApiV1(service: SubService, auth: RequestContextLens<EmailHash>, bearerAuth: Security): List<ContractRoute> {
     val tag = Tag("Subribbits")
 
     val get = "/subs" / SubId.lens meta {

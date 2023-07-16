@@ -58,11 +58,20 @@ Resources:
     Properties:
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: id
+        - AttributeName: emailHash
+          AttributeType: S
+        - AttributeName: name
           AttributeType: S
       KeySchema:
-        - AttributeName: id
+        - AttributeName: emailHash
           KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: names
+          KeySchema:
+            - AttributeName: name
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
 
   Subs:
     Type: AWS::DynamoDB::Table

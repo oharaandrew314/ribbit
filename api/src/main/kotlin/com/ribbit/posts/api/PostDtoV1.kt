@@ -7,14 +7,14 @@ import com.ribbit.posts.Post
 import com.ribbit.posts.PostId
 import com.ribbit.ribbitJson
 import com.ribbit.subs.SubId
-import com.ribbit.users.UserId
+import com.ribbit.users.Username
 import se.ansman.kotshi.JsonSerializable
 import java.time.Instant
 
 @JsonSerializable
 data class PostDtoV1(
     val id: PostId,
-    val authorId: UserId,
+    val authorName: Username,
     val subId: SubId,
     val title: String,
     val content: String,
@@ -27,7 +27,7 @@ data class PostDtoV1(
 
         val sample = PostDtoV1(
             id = PostId.of(Ksuid.fromString("2SCJo6TLReBpeVSFPmkYAyw7aKi")),
-            authorId = UserId.of("user1"),
+            authorName = Username.of("user1"),
             subId = SubId.of("frogs"),
             title = "Frogs are cool",
             content = "Super cool",
@@ -49,7 +49,7 @@ data class PostCursorDtoV1(
 
 fun Post.toDtoV1() = PostDtoV1(
     id = id,
-    authorId = authorId,
+    authorName = authorName,
     subId = subId,
     title = title,
     content = content,
