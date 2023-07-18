@@ -1,32 +1,45 @@
-import 'package:auth0_flutter/auth0_flutter.dart';
-import 'package:auth0_flutter/auth0_flutter_web.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ui/controllers/login_provider.dart';
-import 'package:ui/screens/login_screen.dart';
+import 'package:ui/controllers/ribbit_client.dart';
+import 'package:ui/screens/feed_screen.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env");
 
-  final loginProvider = kIsWeb ?
-      WebLoginProvider(
-          auth0: Auth0Web(dotenv.env['AUTH0_DOMAIN']!, dotenv.env['AUTH0_CLIENT_ID_WEB']!),
-          redirectUrl: dotenv.env['AUTH0_REDIRECT_URL_WEB']!
-      )
-      : NativeLoginProvider(
-        auth0: Auth0(dotenv.env['AUTH0_DOMAIN']!, dotenv.env['AUTH0_CLIENT_ID_NATIVE']!),
-        scheme: dotenv.env['AUTH0_CUSTOM_SCHEME_NATIVE']!
-      );
+  final client = RibbitClient(Uri.parse(dotenv.env["RIBBIT_HOST"]!));
+  final prefs = await SharedPreferences.getInstance();
 
-  final loginScreen = LoginScreen(provider: loginProvider);
-
-  runApp(loginScreen);
-}
-
-Widget ribbitApp(Widget child) {
-  return MaterialApp(
-      title: 'Ribbit',
-      home: child
+  final loginProvider = OAuthLoginProvider(
+      dotenv.env['AUTH0_DOMAIN']!,
+      dotenv.env['AUTH0_CLIENT_ID_WEB']!,
+      prefs
   );
+
+  final router = GoRouter(
+      routes: [
+        GoRoute(
+            path: '/',
+            builder: (context, state) => FeedScreen(client: client, provider: loginProvider),
+            // routes: [
+            //   GoRoute(
+            //       path: 'foo',
+            //       builder: (context, state) => Scaffold(
+            //         appBar: AppBar(title: const Text('Foo')),
+            //         body: const Text("HAI"),
+            //       )
+            //   )
+            // ]
+        )
+      ]
+  );
+
+  final app = MaterialApp.router(
+    title: 'Ribbit',
+    routerConfig: router
+  );
+
+  runApp(app);
 }

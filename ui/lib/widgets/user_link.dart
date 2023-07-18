@@ -3,11 +3,11 @@ import 'package:logger/logger.dart';
 
 final _log = Logger();
 
-Widget userLink(String subId) {
+Widget userLink(String username) {
   return InkWell(
-      child: Text("/r/$subId"),
+      child: Text("/u/$username"),
       onTap: () => {
-        _log.i('Go to $subId')
+        _log.i('Go to $username')
       }
   );
 }

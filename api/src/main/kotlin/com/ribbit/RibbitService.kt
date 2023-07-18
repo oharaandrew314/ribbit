@@ -35,7 +35,7 @@ import org.http4k.contract.contract
 import org.http4k.contract.openapi.ApiInfo
 import org.http4k.contract.openapi.v3.OpenApi3
 import org.http4k.contract.openapi.v3.OpenApi3ApiRenderer
-import org.http4k.contract.security.BearerAuthSecurity
+import org.http4k.contract.security.OpenIdConnectSecurity
 import org.http4k.contract.ui.swaggerUiLite
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
@@ -115,7 +115,10 @@ fun RibbitService.toApi(env: Environment): HttpHandler {
     val contexts = RequestContexts()
     val authLens = RequestContextKey.required<EmailHash>(contexts, "ribbit-auth")
 
-    val security = BearerAuthSecurity(authLens, lookup = authorizer)
+    val security = OpenIdConnectSecurity(
+        env[Settings.jwtIssuer].path(".well-known/openid-configuration"),
+        ServerFilters.BearerAuth(authLens, authorizer)
+    )
 
     val api = contract {
         routes += usersApiV1(users, authLens, security)

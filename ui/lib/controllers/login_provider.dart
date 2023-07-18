@@ -1,67 +1,66 @@
-import 'package:auth0_flutter/auth0_flutter.dart';
-import 'package:auth0_flutter/auth0_flutter_web.dart';
+import 'dart:convert';
+import 'dart:math';
 
-abstract class LoginProvider {
-  Future<UserProfile?> silentLogin();
-  Future<UserProfile?> login();
-  Future logout();
-}
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_web_auth/flutter_web_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ui/controllers/principal.dart';
 
-class WebLoginProvider implements LoginProvider {
-  final Auth0Web auth0;
-  final String redirectUrl;
+class OAuthLoginProvider {
+  final String domain;
+  final String clientId;
+  final SharedPreferences prefs;
+  final Random random = Random.secure();
 
-  WebLoginProvider({
-    required this.auth0,
-    required this.redirectUrl,
-  });
+  OAuthLoginProvider(this.domain, this.clientId, this.prefs);
 
-  @override
-  Future<UserProfile?> silentLogin() async {
-    final credentials = await auth0.onLoad();
-    print(credentials?.idToken);
-    return credentials?.user;
+  Principal? getUser() {
+     final idToken = prefs.getString("idToken");
+     final subject = prefs.getString("subject");
+
+     if (idToken == null || subject == null) return null;
+
+     return Principal(
+       subject: subject,
+       idToken: idToken
+     );
   }
 
-  @override
-  Future<UserProfile?> login() async {
-    await auth0.loginWithRedirect(redirectUrl: redirectUrl);
-    return null;
+  Future<void> logout() async {
+    await prefs.remove("idToken");
+    await prefs.remove("subject");
   }
 
-  @override
-  Future logout() {
-    return auth0.logout(returnToUrl: redirectUrl);
-  }
-}
-
-class NativeLoginProvider implements LoginProvider {
-  final Auth0 auth0;
-  final String scheme;
-
-  NativeLoginProvider({
-    required this.auth0,
-    required this.scheme,
-  });
-
-  @override
-  Future<UserProfile?> silentLogin() {
-    return Future.value(null);
+  String _getRandString(int len) {
+    var values = List<int>.generate(len, (i) =>  random.nextInt(255));
+    return base64UrlEncode(values);
   }
 
-  @override
-  Future<UserProfile?> login() async {
-    final credentials = await auth0
-        .webAuthentication(scheme: scheme)
-        .login();
+  Future<Principal> login() async {
+    final redirectUri = kIsWeb ? Uri.base.resolve("auth.html") : Uri.parse("ribbit://auth");
+    final uri = Uri.https(domain, 'authorize', {
+          'response_type': 'id_token',
+          'client_id': clientId,
+          'redirect_uri': redirectUri.toString(),
+          'scope': 'openid email',
+          'prompt': 'login',
+          'nonce': _getRandString(16)
+        }
+    );
 
-    return credentials.user;
-  }
+    final result = Uri.parse(await FlutterWebAuth.authenticate(url: uri.toString(), callbackUrlScheme: redirectUri.scheme));
+    final idToken = result.fragment.replaceAll("id_token=", "");
+    final jwt = JWT.decode(idToken);
 
-  @override
-  Future logout() async {
-    return auth0
-        .webAuthentication(scheme: scheme)
-        .logout();
+    final principal = Principal(
+      subject: jwt.payload['sub'],
+      idToken: idToken
+    );
+
+    await prefs.setString("idToken", principal.idToken);
+    await prefs.setString("subject", principal.subject);
+
+    return principal;
   }
 }
