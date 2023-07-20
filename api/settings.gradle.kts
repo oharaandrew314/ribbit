@@ -3,9 +3,9 @@ rootProject.name = "ribbit-api"
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            version("http4k", "5.1.1.1")
+            version("http4k", "5.4.0.0")
             version("forkhandles", "2.6.0.0")
-            version("http4k-connect", "5.0.0.0")
+            version("http4k-connect", "5.1.3.0")
             version("kotest", "5.6.2")
             version("slf4j", "2.0.7")
 

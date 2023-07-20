@@ -21,7 +21,6 @@ import org.http4k.core.with
 import org.http4k.kotest.shouldHaveStatus
 import org.http4k.testing.Approver
 import org.http4k.testing.JsonApprovalTest
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.time.Duration
@@ -77,9 +76,21 @@ class PostsApiV1Test {
     }
 
     @Test
-    @Disabled("pagination not yet supported")
     fun `list posts in sub - page 1 of 2`(approval: Approver) {
-        val response = Request(GET, "/subs/${sub3.id}/posts").let(driver)
+        val response = Request(GET, "/subs/${sub3.id}/posts")
+            .query("limit", "2")
+            .let(driver)
+
+        response shouldHaveStatus OK
+        approval.assertApproved(response)
+    }
+
+    @Test
+    fun `list posts in sub - page 2 of 2`(approval: Approver) {
+        val response = Request(GET, "/subs/${sub3.id}/posts")
+            .query("limit", "2")
+            .query("cursor", "2SCJoEUcmYgQj3MtzK0wagL1GTY")
+            .let(driver)
 
         response shouldHaveStatus OK
         approval.assertApproved(response)
@@ -132,7 +143,7 @@ class PostsApiV1Test {
         post.title shouldBe "frogs are cool"
         post.content shouldBe "very cool"
 
-        driver.service.posts.repo[sub1.id].items().toList().shouldContainExactlyInAnyOrder(
+        driver.service.posts.repo[sub1.id, 100].all().toList().shouldContainExactlyInAnyOrder(
             post1, post2,
             Post(
                 id = post.id,

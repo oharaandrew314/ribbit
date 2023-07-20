@@ -81,8 +81,8 @@ fun ribbitService(
     val jwkUri = env[Settings.jwtIssuer].path("/.well-known/jwks.json")
 
     val userRepo = UserRepo(dynamo.usersTable(env[Settings.usersTableName]))
-    val postsRepo = PostRepo(dynamo.postsTable(env[Settings.postsTableName]), env[Settings.pageSize])
-    val subsRepo = SubRepo(dynamo.subsTable(env[Settings.subsTableName]), env[Settings.pageSize])
+    val postsRepo = PostRepo(dynamo.postsTable(env[Settings.postsTableName]))
+    val subsRepo = SubRepo(dynamo.subsTable(env[Settings.subsTableName]))
 
     val authorizer = jwtAuthorizer(
         clock = clock,

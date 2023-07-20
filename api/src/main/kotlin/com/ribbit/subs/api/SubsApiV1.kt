@@ -1,6 +1,7 @@
 package com.ribbit.subs.api
 
 import com.ribbit.RibbitErrorDto
+import com.ribbit.core.CursorDtoV1
 import com.ribbit.posts.lens
 import com.ribbit.subs.SubId
 import com.ribbit.subs.SubService
@@ -20,10 +21,13 @@ import org.http4k.core.Response
 import org.http4k.core.Status.Companion.CONFLICT
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.with
+import org.http4k.lens.Query
 import org.http4k.lens.RequestContextLens
+import org.http4k.lens.value
 
 fun subsApiV1(service: SubService, auth: RequestContextLens<EmailHash>, bearerAuth: Security): List<ContractRoute> {
     val tag = Tag("Subribbits")
+    val cursorLens = Query.value(SubId).optional("cursor")
 
     val get = "/subs" / SubId.lens meta {
         operationId = "getSubV1"
@@ -60,10 +64,12 @@ fun subsApiV1(service: SubService, auth: RequestContextLens<EmailHash>, bearerAu
         operationId = "listSubs"
         summary = "List Subs"
         tags += tag
+        queries += listOf(cursorLens, CursorDtoV1.limitLens)
 
         returning(OK, SubCursorDtoV1.lens to SubCursorDtoV1.sample)
-    } bindContract GET to { _ ->
-        Response(OK).with(SubCursorDtoV1.lens of service.list().toDtoV1())
+    } bindContract GET to { req ->
+        val page = service.list(limit = CursorDtoV1.limitLens(req), cursor = cursorLens(req))
+        Response(OK).with(SubCursorDtoV1.lens of page.toDtoV1())
     }
 
     return listOf(get, create, list)

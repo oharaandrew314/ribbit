@@ -50,12 +50,12 @@ class PostService(
         return repo[postId].asResultOr { PostNotFound(postId) }
     }
 
-    fun getPosts(id: SubId, cursor: PostId? = null): Result4k<Cursor<Post, PostId>, RibbitError> {
-        return Success(repo[id, cursor])
+    fun getPosts(id: SubId,  limit: Int, cursor: PostId? = null): Result4k<Cursor<Post, PostId>, RibbitError> {
+        return Success(repo[id, limit, cursor])
     }
 
-    fun getPosts(authorName: Username, cursor: PostId? = null): Result4k<Cursor<Post, PostId>, RibbitError> {
-        return Success(repo[authorName, cursor])
+    fun getPosts(authorName: Username, limit: Int, cursor: PostId? = null): Result4k<Cursor<Post, PostId>, RibbitError> {
+        return Success(repo[authorName, limit, cursor])
     }
 
     fun deletePost(principal: EmailHash, id: PostId): Result4k<Post, RibbitError> {

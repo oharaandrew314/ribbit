@@ -1,5 +1,6 @@
 package com.ribbit.posts.api
 
+import com.ribbit.core.CursorDtoV1
 import com.ribbit.posts.PostId
 import com.ribbit.posts.PostService
 import com.ribbit.posts.lens
@@ -23,10 +24,13 @@ import org.http4k.core.Response
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.with
+import org.http4k.lens.Query
 import org.http4k.lens.RequestContextLens
+import org.http4k.lens.value
 
 fun postsApiV1(service: PostService, auth: RequestContextLens<EmailHash>, bearerAuth: Security): List<ContractRoute> {
     val tag = Tag("Posts")
+    val cursorLens = Query.value(PostId).optional("cursor")
 
     val create = "/subs" / SubId.lens / "posts" meta {
         operationId = "createPost"
@@ -48,13 +52,14 @@ fun postsApiV1(service: PostService, auth: RequestContextLens<EmailHash>, bearer
     val list = "/subs" / SubId.lens / "posts" meta {
         operationId = "listSubPosts"
         summary = "List Posts for Sub"
+        queries += listOf(cursorLens, CursorDtoV1.limitLens)
         tags += tag
 
         returning(OK, PostDtoV1.manyLens to PostDtoV1.sampleCursor)
         returning(NOT_FOUND to "sub not found")
     } bindContract GET to { subId, _ ->
-        {
-            service.getPosts(subId)
+        { req ->
+            service.getPosts(subId, limit = CursorDtoV1.limitLens(req), cursor = cursorLens(req))
                 .map { Response(OK).with(PostDtoV1.manyLens of it.toDtoV1()) }
                 .mapFailure { it.toResponse() }
                 .get()
@@ -65,11 +70,12 @@ fun postsApiV1(service: PostService, auth: RequestContextLens<EmailHash>, bearer
         operationId = "listPostsByAuthor"
         summary = "List Posts for Author"
         tags += tag
+        queries += listOf(cursorLens, CursorDtoV1.limitLens)
 
         returning(OK, PostDtoV1.manyLens to PostDtoV1.sampleCursor)
     } bindContract GET to { userId, _ ->
-        {
-            service.getPosts(userId)
+        { req ->
+            service.getPosts(userId, limit = CursorDtoV1.limitLens(req), cursor = cursorLens(req))
                 .map { Response(OK).with(PostDtoV1.manyLens of it.toDtoV1()) }
                 .mapFailure { it.toResponse() }
                 .get()

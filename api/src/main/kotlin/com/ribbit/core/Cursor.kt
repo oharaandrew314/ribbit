@@ -5,11 +5,11 @@ data class Cursor<Item: Any, Id: Any>(
     val next: Id?,
     private val getPage: (Id) -> Cursor<Item, Id>?
 ) {
-    fun items(): Sequence<Item> = sequence {
+    fun all(): Sequence<Item> = sequence {
         yieldAll(items)
         val nextCursor = next?.let(getPage)
         if (nextCursor != null) {
-            yieldAll(nextCursor.items())
+            yieldAll(nextCursor.all())
         }
     }
 }

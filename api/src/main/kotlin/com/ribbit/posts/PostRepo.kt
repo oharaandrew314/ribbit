@@ -37,37 +37,36 @@ fun DynamoDb.postsTable(name: TableName) = tableMapper<Post, PostId, Unit>(
     autoMarshalling = ribbitJson
 )
 
-class PostRepo(
-    private val table: DynamoDbTableMapper<Post, PostId, Unit>,
-    private val pageSize: UInt
-) {
+class PostRepo(private val table: DynamoDbTableMapper<Post, PostId, Unit>) {
     operator fun get(postId: PostId) = table[postId]
 
-    operator fun get(subId: SubId, cursor: PostId? = null): Cursor<Post, PostId> {
-        // TODO support cursor
-        println(cursor)
-        val items = table.index(postsSubIndex).query(subId, scanIndexForward = false)
-            .take(pageSize.toInt())
-            .toList()
+    operator fun get(subId: SubId, limit: Int, cursor: PostId? = null): Cursor<Post, PostId> {
+        val page = table.index(postsSubIndex).queryPage(
+            HashKey = subId,
+            ScanIndexForward = false,
+            Limit = limit,
+            ExclusiveStartKey = cursor
+        )
 
         return Cursor(
-            items = items,
-            next = null,
-            getPage = { get(subId, it) }
+            items = page.items,
+            next = page.nextSortKey,
+            getPage = { get(subId, limit, it) }
         )
     }
 
-    operator fun get(author: Username, cursor: PostId? = null): Cursor<Post, PostId> {
-        // TODO support cursor
-        println(cursor)
-        val items = table.index(postsAuthorIndex).query(author, scanIndexForward = false)
-            .take(pageSize.toInt())
-            .toList()
+    operator fun get(author: Username, limit: Int, cursor: PostId? = null): Cursor<Post, PostId> {
+        val page = table.index(postsAuthorIndex).queryPage(
+            HashKey = author,
+            ScanIndexForward = false,
+            Limit = limit,
+            ExclusiveStartKey = cursor
+        )
 
         return Cursor(
-            items = items,
-            next = null,
-            getPage = { get(author, it) }
+            items = page.items,
+            next = page.nextSortKey,
+            getPage = { get(author, limit, it) }
         )
     }
     operator fun plusAssign(post: Post) = table.plusAssign(post)

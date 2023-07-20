@@ -101,15 +101,34 @@ class SubsApiV1Test {
         approval.assertApproved(response)
     }
 
-    // TODO support pagination
     @Test
-    fun `list subs`(approval: Approver) {
+    fun `list subs - page 1 of 2`(approval: Approver) {
         val user = driver.createUser("1")
 
         driver.createSub(user, "111")
         driver.createSub(user, "222")
+        driver.createSub(user, "333")
 
-        val response = Request(GET, "/subs").let(driver)
+        val response = Request(GET, "/subs")
+            .query("limit", "2")
+            .let(driver)
+
+        response shouldHaveStatus OK
+        approval.assertApproved(response)
+    }
+
+    @Test
+    fun `list subs - page 2 of 2`(approval: Approver) {
+        val user = driver.createUser("1")
+
+        driver.createSub(user, "111")
+        driver.createSub(user, "222")
+        driver.createSub(user, "333")
+
+        val response = Request(GET, "/subs")
+            .query("limit", "2")
+            .query("cursor", "222")
+            .let(driver)
 
         response shouldHaveStatus OK
         approval.assertApproved(response)

@@ -32,5 +32,5 @@ class SubService(val subs: SubRepo, val users: UserRepo) {
         return Success(sub)
     }
 
-    fun list(cursor: SubId? = null) = subs.list(cursor)
+    fun list(limit: Int, cursor: SubId? = null) = subs.list(limit, cursor)
 }
