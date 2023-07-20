@@ -32,4 +32,13 @@ class RibbitClient {
     final json = jsonDecode(resp.body);
     return parsePosts(json);
   }
+
+  Future<UserDtoV1> createProfile({required String token, required String name}) async {
+    final resp = await http.post(
+      host.resolve("/users"),
+      headers: { 'Authorization': 'Bearer $token' }
+    );
+
+    if (resp.statusCode != 200) throw HttpException("${resp.statusCode}: ${resp.body}");
+  }
 }

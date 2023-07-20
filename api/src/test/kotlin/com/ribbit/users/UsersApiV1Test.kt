@@ -7,6 +7,7 @@ import io.kotest.matchers.shouldBe
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
+import org.http4k.core.Status.Companion.CONFLICT
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.UNAUTHORIZED
@@ -64,6 +65,34 @@ class UsersApiV1Test {
             .let(driver)
 
         response shouldHaveStatus UNAUTHORIZED
+    }
+
+    @Test
+    fun `create profile - already created`(approval: Approver) {
+        val user = driver.createUser("1")
+        val token = driver.createToken(user.name.value)
+
+        val response = Request(POST, "/users")
+            .withToken(token)
+            .with(UserDataDtoV1.lens of UserDataDtoV1(user.name))
+            .let(driver)
+
+        response shouldHaveStatus CONFLICT
+        approval.assertApproved(response)
+    }
+
+    @Test
+    fun `create profile - duplicate username`(approval: Approver) {
+        val user1 = driver.createUser("1")
+        val token = driver.createToken("2")
+
+        val response = Request(POST, "/users")
+            .withToken(token)
+            .with(UserDataDtoV1.lens of UserDataDtoV1(user1.name))
+            .let(driver)
+
+        response shouldHaveStatus CONFLICT
+        approval.assertApproved(response)
     }
 
     @Test

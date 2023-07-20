@@ -17,6 +17,7 @@ import org.http4k.contract.security.Security
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Response
+import org.http4k.core.Status.Companion.CONFLICT
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.with
@@ -65,7 +66,7 @@ fun usersApiV1(service: UserService, auth: RequestContextLens<EmailHash>, bearer
 
         receiving(UserDataDtoV1.lens to UserDataDtoV1.sample)
         returning(OK, UserDtoV1.lens to UserDtoV1.sample)
-        returning(NOT_FOUND, RibbitErrorDto.lens to RibbitErrorDto.sample)
+        returning(CONFLICT, RibbitErrorDto.lens to RibbitErrorDto.sample)
     } bindContract POST to { request ->
         service
             .create(auth(request), UserDataDtoV1.lens(request).toModel())

@@ -24,7 +24,7 @@ fun RibbitError.toResponse() = when(this) {
     is DuplicateSub -> Response(CONFLICT)
     is UserNotFound -> Response(NOT_FOUND)
     is CannotEditPost -> Response(FORBIDDEN)
-    UserAlreadyExists -> Response(FORBIDDEN)
+    UserAlreadyExists -> Response(CONFLICT)
     is CannotCreatePost -> Response(FORBIDDEN)
     is DuplicateUsername -> Response(CONFLICT)
     CannotCreateSub -> Response(FORBIDDEN)
