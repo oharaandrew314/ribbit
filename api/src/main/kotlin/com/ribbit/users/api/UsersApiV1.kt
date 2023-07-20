@@ -42,6 +42,21 @@ fun usersApiV1(service: UserService, auth: RequestContextLens<EmailHash>, bearer
         }
     }
 
+    val getProfile = "/users" meta {
+        operationId = "getUserProfileV1"
+        summary = "Get your User Profile"
+        tags += tag
+        security = bearerAuth
+
+        returning(OK, UserDtoV1.lens to UserDtoV1.sample)
+        returning(NOT_FOUND, RibbitErrorDto.lens to RibbitErrorDto.sample)
+    } bindContract GET to { request ->
+        service.getUser(auth(request))
+            .map { Response(OK).with(UserDtoV1.lens of it.toDtoV1()) }
+            .mapFailure { it.toResponse() }
+            .get()
+    }
+
     val createProfile = "/users" meta {
         operationId = "createUserProfileV1"
         summary = "Create User Profile"
@@ -59,5 +74,5 @@ fun usersApiV1(service: UserService, auth: RequestContextLens<EmailHash>, bearer
             .get()
     }
 
-    return listOf(getUser, createProfile)
+    return listOf(getUser, getProfile, createProfile)
 }

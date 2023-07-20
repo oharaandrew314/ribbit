@@ -83,4 +83,36 @@ class UsersApiV1Test {
             name = Username.of("foo")
         )
     }
+
+    @Test
+    fun `get your profile - unauthorized`() {
+        val response = Request(GET, "/users").let(driver)
+
+        response shouldHaveStatus UNAUTHORIZED
+    }
+
+    @Test
+    fun `get your profile - not created`(approval: Approver) {
+        val token = driver.createToken("1")
+
+        val response = Request(GET, "/users")
+            .withToken(token)
+            .let(driver)
+
+        response shouldHaveStatus NOT_FOUND
+        approval.assertApproved(response)
+    }
+
+    @Test
+    fun `get your profile - success`(approval: Approver) {
+        val user = driver.createUser("1")
+        val token = driver.createToken(user.name.value)
+
+        val response = Request(GET, "/users")
+            .withToken(token)
+            .let(driver)
+
+        response shouldHaveStatus OK
+        approval.assertApproved(response)
+    }
 }
