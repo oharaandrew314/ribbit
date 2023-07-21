@@ -8,16 +8,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ui/controllers/principal.dart';
 
 class OAuthLoginProvider {
-  final String domain;
-  final String clientId;
-  final SharedPreferences prefs;
-  final Random random = Random.secure();
+  final String _domain;
+  final String _clientId;
+  final SharedPreferences _prefs;
+  final Random _random = Random.secure();
 
-  OAuthLoginProvider(this.domain, this.clientId, this.prefs);
+  OAuthLoginProvider(this._domain, this._clientId, this._prefs);
 
   Principal? getUser() {
-     final idToken = prefs.getString("idToken");
-     final subject = prefs.getString("subject");
+     final idToken = _prefs.getString("idToken");
+     final subject = _prefs.getString("subject");
 
      if (idToken == null || subject == null) return null;
 
@@ -28,20 +28,20 @@ class OAuthLoginProvider {
   }
 
   Future<void> logout() async {
-    await prefs.remove("idToken");
-    await prefs.remove("subject");
+    await _prefs.remove("idToken");
+    await _prefs.remove("subject");
   }
 
   String _getRandString(int len) {
-    var values = List<int>.generate(len, (i) =>  random.nextInt(255));
+    var values = List<int>.generate(len, (i) =>  _random.nextInt(255));
     return base64UrlEncode(values);
   }
 
   Future<Principal> login() async {
     final redirectUri = kIsWeb ? Uri.base.resolve("auth.html") : Uri.parse("ribbit://auth");
-    final uri = Uri.https(domain, 'authorize', {
+    final uri = Uri.https(_domain, 'authorize', {
           'response_type': 'id_token',
-          'client_id': clientId,
+          'client_id': _clientId,
           'redirect_uri': redirectUri.toString(),
           'scope': 'openid email',
           'prompt': 'login',
@@ -58,8 +58,8 @@ class OAuthLoginProvider {
       idToken: idToken
     );
 
-    await prefs.setString("idToken", principal.idToken);
-    await prefs.setString("subject", principal.subject);
+    await _prefs.setString("idToken", principal.idToken);
+    await _prefs.setString("subject", principal.subject);
 
     return principal;
   }

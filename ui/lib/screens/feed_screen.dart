@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ui/controllers/dtos.dart';
 import 'package:ui/controllers/login_provider.dart';
 import 'package:ui/controllers/principal.dart';
@@ -20,6 +21,7 @@ class _FeedScreenState extends State<FeedScreen> {
 
   List<PostDtoV1> _posts = [];
   Principal? _principal;
+  UserDtoV1? _profile;
 
   @override
   void initState() {
@@ -29,9 +31,18 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   Future silentLogin() async {
-    final principal = await widget.provider.getUser();
+    final principal = widget.provider.getUser();
+
+    if (principal == null) return;
+
+    final profile = await widget.client.getProfile(principal.idToken);
+    if (profile == null && context.mounted) {
+      context.go('/login');
+    }
+
     setState(() {
       _principal = principal;
+      _profile = profile;
     });
   }
 
@@ -42,18 +53,26 @@ class _FeedScreenState extends State<FeedScreen> {
     });
   }
 
-  void doLogin(BuildContext context) async {
+  void doLogin() async {
     final principal = await widget.provider.login();
+    final profile = await widget.client.getProfile(principal.idToken);
+    if (profile == null && context.mounted) {
+      context.go('/login');
+    }
+
     setState(() {
       _principal = principal;
+      _profile = profile;
     });
 
   }
 
-  void doLogout(BuildContext context) {
+  void doLogout() {
+    print('logout');
     widget.provider.logout();
     setState(() {
       _principal = null;
+      _profile = null;
     });
   }
 
@@ -72,9 +91,9 @@ class _FeedScreenState extends State<FeedScreen> {
         title: const Text('Ribbit'),
         actions: [
           ProfileButton(
-              principal: _principal,
-              doLogout: doLogout,
-              doLogin: doLogin
+              profile: _profile,
+              logout: doLogout,
+              login: doLogin
           ),
         ],
       ),

@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:ui/controllers/principal.dart';
+import 'package:ui/controllers/dtos.dart';
 
 class ProfileButton extends StatelessWidget {
-  final Principal? principal;
-  final Function(BuildContext) doLogout;
-  final Function(BuildContext) doLogin;
+  final UserDtoV1? profile;
+  final Function() logout;
+  final Function() login;
   final _popupMenu = GlobalKey<PopupMenuButtonState>();
 
   ProfileButton({
-    required this.principal,
-    required this.doLogout,
-    required this.doLogin,
+    required this.profile,
+    required this.logout,
+    required this.login,
     Key? key
   }): super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (principal == null) {
+    if (profile == null) {
       return ElevatedButton(
-          onPressed: () => doLogin(context),
+          onPressed: login,
           child: const Text("Login")
       );
     }
@@ -27,15 +27,12 @@ class ProfileButton extends StatelessWidget {
         key: _popupMenu,
         itemBuilder: (context) => [
           PopupMenuItem(
-              child: Text(principal!.subject)
-          ),
-          PopupMenuItem(
+              onTap: logout,
               child: const Text("Logout"),
-              onTap: () => doLogout(context)
           )
         ],
         child: ElevatedButton(
-          child: const Text("Profile"),
+          child: Text(profile!.name),
           onPressed: () => _popupMenu.currentState?.showButtonMenu(),
         )
     );

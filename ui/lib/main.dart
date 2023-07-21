@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ui/controllers/login_provider.dart';
 import 'package:ui/controllers/ribbit_client.dart';
 import 'package:ui/screens/feed_screen.dart';
+import 'package:ui/screens/make_profile_screen.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env");
@@ -23,15 +24,10 @@ Future main() async {
         GoRoute(
             path: '/',
             builder: (context, state) => FeedScreen(client: client, provider: loginProvider),
-            // routes: [
-            //   GoRoute(
-            //       path: 'foo',
-            //       builder: (context, state) => Scaffold(
-            //         appBar: AppBar(title: const Text('Foo')),
-            //         body: const Text("HAI"),
-            //       )
-            //   )
-            // ]
+        ),
+        GoRoute(
+            path: '/login',
+            builder: (context, state) => MakeProfileScreen(client: client, provider: loginProvider),
         )
       ]
   );
