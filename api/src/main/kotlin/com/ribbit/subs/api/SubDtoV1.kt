@@ -5,19 +5,22 @@ import com.ribbit.core.CursorDtoV1
 import com.ribbit.ribbitJson
 import com.ribbit.subs.Sub
 import com.ribbit.subs.SubId
+import com.ribbit.users.Username
 import se.ansman.kotshi.JsonSerializable
 
 @JsonSerializable
 data class SubDtoV1(
     val id: SubId,
-    val name: String
+    val name: String,
+    val owner: Username
 ) {
     companion object {
         val lens = ribbitJson.autoBody<SubDtoV1>().toLens()
 
         val sample = SubDtoV1(
             id = SubId.of("frogs"),
-            name = "Frogs"
+            name = "Frogs",
+            owner = Username.of("user1")
         )
     }
 }
@@ -38,7 +41,8 @@ data class SubCursorDtoV1(
 
 fun Sub.toDtoV1() = SubDtoV1(
     id = id,
-    name = name
+    name = name,
+    owner = owner
 )
 
 fun Cursor<Sub, SubId>.toDtoV1() = SubCursorDtoV1(
