@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,19 +16,14 @@ class OAuthLoginProvider {
 
   Principal? getUser() {
      final idToken = _prefs.getString("idToken");
-     final subject = _prefs.getString("subject");
 
-     if (idToken == null || subject == null) return null;
+     if (idToken == null) return null;
 
-     return Principal(
-       subject: subject,
-       idToken: idToken
-     );
+     return Principal(idToken);
   }
 
   Future<void> logout() async {
     await _prefs.remove("idToken");
-    await _prefs.remove("subject");
   }
 
   String _getRandString(int len) {
@@ -51,15 +45,10 @@ class OAuthLoginProvider {
 
     final result = Uri.parse(await FlutterWebAuth.authenticate(url: uri.toString(), callbackUrlScheme: redirectUri.scheme));
     final idToken = result.fragment.replaceAll("id_token=", "");
-    final jwt = JWT.decode(idToken);
 
-    final principal = Principal(
-      subject: jwt.payload['sub'],
-      idToken: idToken
-    );
+    final principal = Principal(idToken);
 
     await _prefs.setString("idToken", principal.idToken);
-    await _prefs.setString("subject", principal.subject);
 
     return principal;
   }

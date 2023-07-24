@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ui/controllers/login_provider.dart';
 import 'package:ui/controllers/ribbit_client.dart';
+import 'package:ui/screens/create_post_screen.dart';
 import 'package:ui/screens/feed_screen.dart';
 import 'package:ui/screens/make_profile_screen.dart';
+import 'package:ui/screens/post_screen.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env");
@@ -28,6 +30,18 @@ Future main() async {
         GoRoute(
             path: '/login',
             builder: (context, state) => MakeProfileScreen(client: client, provider: loginProvider),
+        ),
+        GoRoute(
+            path: '/new',
+            builder: (context, state) => CreatePostScreen(client: client, provider: loginProvider)
+        ),
+        GoRoute(
+          path: '/posts/:id',
+          builder: (context, GoRouterState state) => PostScreen(
+              client: client,
+              principal: loginProvider.getUser(),
+              postId: state.pathParameters['id']!
+          )
         )
       ]
   );

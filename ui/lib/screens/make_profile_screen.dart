@@ -33,7 +33,7 @@ class _MakeProfileScreenState extends State<MakeProfileScreen> {
 
   void submit() async {
     final profile = await widget.client.createProfile(
-        token: _principal.idToken,
+        principal: _principal,
         name: _usernameFieldController.value.text
     );
     if (profile != null && context.mounted) {
@@ -49,22 +49,6 @@ class _MakeProfileScreenState extends State<MakeProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const title = Text("Please choose a username");
-
-    // final usernameField = TextField(
-    //   controller: usernameFieldController,
-    //   decoration: const InputDecoration(
-    //     hintText: 'Something awesome...'
-    //   ),
-    // );
-    //
-    // final dialog = Column(
-    //   children: [
-    //     title,
-    //     usernameField
-    //   ],
-    // );
-
     final usernameFormField = TextFormField(
       controller: _usernameFieldController,
       decoration: const InputDecoration(

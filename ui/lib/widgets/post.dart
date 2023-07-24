@@ -12,7 +12,7 @@ class Post extends StatelessWidget {
   Widget build(BuildContext context) {
     final header = Row(
       children: [
-        subLink(post.id),
+        subLink(post.subId),
         const Text('Posted by'),
         userLink(post.authorName),
         Text(post.created.fromNow())

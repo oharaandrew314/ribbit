@@ -16,7 +16,7 @@ dependencies:
   jiffy: ^6.2.1
   flutter_web_auth: ^0.5.0
   shared_preferences: ^2.2.0
-  dart_jsonwebtoken: ^2.8.2
+  dropdown_search: ^5.0.6
 
 dev_dependencies:
   flutter_test:

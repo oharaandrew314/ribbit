@@ -5,7 +5,8 @@ import 'package:ui/controllers/login_provider.dart';
 import 'package:ui/controllers/principal.dart';
 import 'package:ui/controllers/ribbit_client.dart';
 import 'package:ui/widgets/post.dart';
-import 'package:ui/widgets/top_bar.dart';
+import 'package:ui/widgets/profile_button.dart';
+import 'package:ui/widgets/sub_selector.dart';
 
 class FeedScreen extends StatefulWidget {
   final OAuthLoginProvider provider;
@@ -19,6 +20,7 @@ class FeedScreen extends StatefulWidget {
 
 class _FeedScreenState extends State<FeedScreen> {
 
+  List<SubDtoV1> _subs = [];
   List<PostDtoV1> _posts = [];
   Principal? _principal;
   UserDtoV1? _profile;
@@ -26,8 +28,8 @@ class _FeedScreenState extends State<FeedScreen> {
   @override
   void initState() {
     super.initState();
-    loadPosts();
     silentLogin();
+    loadSubs();
   }
 
   Future silentLogin() async {
@@ -35,7 +37,7 @@ class _FeedScreenState extends State<FeedScreen> {
 
     if (principal == null) return;
 
-    final profile = await widget.client.getProfile(principal.idToken);
+    final profile = await widget.client.getProfile(principal);
     if (profile == null && context.mounted) {
       context.go('/login');
     }
@@ -46,8 +48,15 @@ class _FeedScreenState extends State<FeedScreen> {
     });
   }
 
-  Future loadPosts() async {
-    final page = await widget.client.listPosts("frogs");
+  Future loadSubs() async {
+    final subs = await widget.client.listSubs();
+    setState(() {
+      _subs = subs.items;
+    });
+  }
+
+  Future loadPosts(SubDtoV1 sub) async {
+    final page = await widget.client.listPosts(sub.id);
     setState(() {
       _posts = page.items;
     });
@@ -55,7 +64,7 @@ class _FeedScreenState extends State<FeedScreen> {
 
   void doLogin() async {
     final principal = await widget.provider.login();
-    final profile = await widget.client.getProfile(principal.idToken);
+    final profile = await widget.client.getProfile(principal);
     if (profile == null && context.mounted) {
       context.go('/login');
     }
@@ -68,12 +77,15 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   void doLogout() {
-    print('logout');
     widget.provider.logout();
     setState(() {
       _principal = null;
       _profile = null;
     });
+  }
+
+  void doPost() {
+    context.go('/new');
   }
 
   @override
@@ -90,6 +102,16 @@ class _FeedScreenState extends State<FeedScreen> {
       appBar: AppBar(
         title: const Text('Ribbit'),
         actions: [
+          if (_principal != null) ElevatedButton.icon(
+              onPressed: doPost,
+              label: const Text('Post'),
+              icon: const Icon(Icons.add)
+          ),
+          SubSelector(
+              subs: _subs,
+              selected: _subs.firstOrNull,
+              select: loadPosts,
+          ),
           ProfileButton(
               profile: _profile,
               logout: doLogout,
