@@ -1,9 +1,9 @@
 package com.ribbit.posts
 
 import com.github.ksuid.Ksuid
-import dev.forkhandles.values.AbstractComparableValue
-import dev.forkhandles.values.ValueFactory
+import io.andrewohara.utils.ksuid.KsuidValue
+import io.andrewohara.utils.ksuid.KsuidValueFactory
 
-class PostId(value: Ksuid): AbstractComparableValue<PostId, Ksuid>(value) {
-    companion object: ValueFactory<PostId, Ksuid>(::PostId, parseFn = Ksuid::fromString)
+class PostId(value: Ksuid): KsuidValue(value) {
+    companion object: KsuidValueFactory<PostId>(::PostId)
 }
