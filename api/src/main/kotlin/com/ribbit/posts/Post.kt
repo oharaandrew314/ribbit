@@ -2,6 +2,7 @@ package com.ribbit.posts
 
 import com.ribbit.subs.SubId
 import com.ribbit.users.Username
+import io.andrewohara.utils.ksuid.instant
 import se.ansman.kotshi.JsonSerializable
 import java.time.Instant
 
@@ -14,7 +15,7 @@ data class Post(
     val content: String,
     val updated: Instant?
 ) {
-    val created get() = id.time
+    val created get() = id.instant
 }
 
 fun Post.update(data: PostData, time: Instant) = copy(
