@@ -4,6 +4,7 @@ import com.ribbit.core.Cursor
 import com.ribbit.ribbitJson
 import com.ribbit.subs.SubId
 import com.ribbit.users.Username
+import io.andrewohara.utils.ksuid.value
 import org.http4k.connect.amazon.dynamodb.DynamoDb
 import org.http4k.connect.amazon.dynamodb.mapper.DynamoDbTableMapper
 import org.http4k.connect.amazon.dynamodb.mapper.DynamoDbTableMapperSchema

@@ -29,7 +29,7 @@ val slf4jVersion = "2.0.7"
 dependencies {
     implementation(platform("org.http4k:http4k-bom:5.10.1.0"))
     implementation(platform("org.http4k:http4k-connect-bom:5.4.0.0"))
-    implementation(platform("dev.forkhandles:forkhandles-bom:2.8.0.0"))
+    implementation(platform("dev.forkhandles:forkhandles-bom:2.10.1.0"))
 
     implementation(kotlin("stdlib"))
     implementation("org.http4k:http4k-core")
@@ -42,7 +42,7 @@ dependencies {
     implementation("org.http4k:http4k-connect-amazon-dynamodb")
     implementation("dev.forkhandles:result4k")
     implementation("dev.forkhandles:values4k")
-    implementation("com.github.oharaandrew314:service-utils:1.5.0")
+    implementation("com.github.oharaandrew314:service-utils:1.16.0")
     implementation("com.nimbusds:nimbus-jose-jwt:9.26")
     implementation("io.github.oshai:kotlin-logging-jvm:4.0.2")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")

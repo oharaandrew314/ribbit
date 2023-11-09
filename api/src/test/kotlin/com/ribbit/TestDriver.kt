@@ -13,7 +13,6 @@ import com.ribbit.posts.postsAuthorIndex
 import com.ribbit.posts.postsSubIndex
 import com.ribbit.posts.postsTable
 import com.ribbit.subs.Sub
-import com.ribbit.subs.SubData
 import com.ribbit.subs.SubId
 import com.ribbit.subs.subsTable
 import com.ribbit.users.EmailHash
