@@ -24,8 +24,7 @@ class SubRepo(private val table: DynamoDbTableMapper<Sub, SubId, Unit>) {
 
         return Cursor(
             items = page.items,
-            next = null,
-            getPage = { list(limit, it) }
+            next = null
         )
     }
 }

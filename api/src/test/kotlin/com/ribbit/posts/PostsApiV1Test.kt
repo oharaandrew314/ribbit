@@ -1,11 +1,17 @@
 package com.ribbit.posts
 
 import com.ribbit.TestDriver
+import com.ribbit.createPost
 import com.ribbit.createSub
+import com.ribbit.createToken
+import com.ribbit.createUser
+import com.ribbit.hours
 import com.ribbit.posts.api.PostDataDtoV1
 import com.ribbit.posts.api.PostDtoV1
+import com.ribbit.posts.api.toDtoV1
+import com.ribbit.seconds
 import com.ribbit.withToken
-import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import org.http4k.core.Method.DELETE
@@ -23,7 +29,6 @@ import org.http4k.testing.Approver
 import org.http4k.testing.JsonApprovalTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import java.time.Duration
 
 @ExtendWith(JsonApprovalTest::class)
 class PostsApiV1Test {
@@ -34,16 +39,16 @@ class PostsApiV1Test {
     private val user2 = driver.createUser("2")
 
     private val sub1 = driver.createSub(user1, "111")
-    private val post1 = driver.createPost(sub1, user1)
-    private val post2 = driver.createPost(sub1, user2)
+    private val post1 = driver.createPost(sub1, user1, title = "post 1")
+    private val post2 = driver.createPost(sub1, user2, title = "post 2")
 
     private val sub2 = driver.createSub(user2, "222")
-    private val post3 = driver.createPost(sub2, user1)
+    private val post3 = driver.createPost(sub2, user1, title = "post 3")
 
     private val sub3 = driver.createSub(user1, "333").also { sub3 ->
-        driver.createPost(sub3, user1, driver.clock.instant(), title = "post 4")
-        driver.createPost(sub3, user1, driver.clock.instant().plusSeconds(1), title = "post 5")
-        driver.createPost(sub3, user1, driver.clock.instant().plusSeconds(2), title = "post 6")
+        driver.createPost(sub3, user1, title = "post 4")
+        driver.createPost(sub3, user1, title = "post 5")
+        driver.createPost(sub3, user1, title = "post 6")
     }
 
     private val data = PostDataDtoV1(
@@ -89,7 +94,7 @@ class PostsApiV1Test {
     fun `list posts in sub - page 2 of 2`(approval: Approver) {
         val response = Request(GET, "/subs/${sub3.id}/posts")
             .query("limit", "2")
-            .query("cursor", "2SCJoEUcmYgQj3MtzK0wagL1GTY")
+            .query("cursor", "2SCJoeiF6DqBgrKMXRPZysZAth5")
             .let(driver)
 
         response shouldHaveStatus OK
@@ -135,24 +140,16 @@ class PostsApiV1Test {
             .let(driver)
 
         response shouldHaveStatus OK
-        val post = PostDtoV1.lens(response)
+        val created = PostDtoV1.lens(response)
 
-        post.created shouldBe driver.clock.instant()
-        post.updated.shouldBeNull()
-        post.authorName shouldBe user1.name
-        post.title shouldBe "frogs are cool"
-        post.content shouldBe "very cool"
+        created.created shouldBe driver.time
+        created.updated.shouldBeNull()
+        created.authorName shouldBe user1.name
+        created.title shouldBe "frogs are cool"
+        created.content shouldBe "very cool"
 
-        driver.service.posts.repo[sub1.id, 100].all().toList().shouldContainExactlyInAnyOrder(
-            post1, post2,
-            Post(
-                id = post.id,
-                authorName = user1.name,
-                title = "frogs are cool",
-                content = "very cool",
-                updated = null,
-                subId = sub1.id
-            )
+        driver.service.posts.repo[sub1.id, 100].items.map(Post::toDtoV1).shouldContainExactly(
+            created, post2.toDtoV1(), post1.toDtoV1()
         )
     }
 
@@ -187,7 +184,7 @@ class PostsApiV1Test {
 
     @Test
     fun `edit post`(approval: Approver) {
-        driver.clock += Duration.ofHours(1)
+        driver.clock += 1.hours
 
         val response = Request(PUT, "/posts/${post2.id}")
             .with(PostDataDtoV1.lens of data)
@@ -200,7 +197,7 @@ class PostsApiV1Test {
         driver.service.posts.repo[post2.id] shouldBe post2.copy(
             title = "frogs are cool",
             content = "very cool",
-            updated = driver.clock.instant()
+            updated = driver.time
         )
     }
 

@@ -64,7 +64,8 @@ class RibbitService(
     val authorizer: Authorizer,
     val posts: PostService,
     val users: UserService,
-    val subs: SubService
+    val subs: SubService,
+    val nextId: KsuidGenerator
 )
 
 fun ribbitService(
@@ -93,15 +94,19 @@ fun ribbitService(
             RemoteJWKSet(URL(jwkUri.toString()))
         )
     )
+
+    val nextId = KsuidGenerator(Random(env[Settings.randomSeed]))
+
     return RibbitService(
         authorizer = authorizer,
         users = UserService(userRepo),
         posts = PostService(
             postsRepo, subsRepo, userRepo,
             clock = clock,
-            ksuidGen = KsuidGenerator(Random(env[Settings.randomSeed]))
+            ksuidGen = nextId
         ),
-        subs = SubService(subsRepo, userRepo)
+        subs = SubService(subsRepo, userRepo),
+        nextId = nextId
     )
 }
 

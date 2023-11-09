@@ -32,7 +32,7 @@ val postsAuthorIndex =  DynamoDbTableMapperSchema.GlobalSecondary(
 )
 
 fun DynamoDb.postsTable(name: TableName) = tableMapper<Post, PostId, Unit>(
-    TableName = name,
+    tableName = name,
     primarySchema = primaryIndex,
     autoMarshalling = ribbitJson
 )
@@ -50,8 +50,7 @@ class PostRepo(private val table: DynamoDbTableMapper<Post, PostId, Unit>) {
 
         return Cursor(
             items = page.items,
-            next = page.nextSortKey,
-            getPage = { get(subId, limit, it) }
+            next = page.nextSortKey
         )
     }
 
@@ -65,8 +64,7 @@ class PostRepo(private val table: DynamoDbTableMapper<Post, PostId, Unit>) {
 
         return Cursor(
             items = page.items,
-            next = page.nextSortKey,
-            getPage = { get(author, limit, it) }
+            next = page.nextSortKey
         )
     }
     operator fun plusAssign(post: Post) = table.plusAssign(post)

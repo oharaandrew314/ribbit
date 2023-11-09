@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "1.9.0"
-    id("com.google.devtools.ksp") version "1.9.0-1.0.11"
+    kotlin("jvm") version "1.9.20"
+    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
 }
 
 
@@ -23,13 +23,13 @@ tasks.compileKotlin {
     }
 }
 
-val kotshiVersion = "2.11.4"
+val kotshiVersion = "2.14.0"
 val slf4jVersion = "2.0.7"
 
 dependencies {
-    implementation(platform("org.http4k:http4k-bom:5.4.0.0"))
-    implementation(platform("org.http4k:http4k-connect-bom:5.1.3.0"))
-    implementation(platform("dev.forkhandles:forkhandles-bom:2.6.0.0"))
+    implementation(platform("org.http4k:http4k-bom:5.10.1.0"))
+    implementation(platform("org.http4k:http4k-connect-bom:5.4.0.0"))
+    implementation(platform("dev.forkhandles:forkhandles-bom:2.8.0.0"))
 
     implementation(kotlin("stdlib"))
     implementation("org.http4k:http4k-core")

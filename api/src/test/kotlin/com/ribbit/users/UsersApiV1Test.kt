@@ -1,6 +1,8 @@
 package com.ribbit.users
 
 import com.ribbit.TestDriver
+import com.ribbit.createToken
+import com.ribbit.createUser
 import com.ribbit.users.api.UserDataDtoV1
 import com.ribbit.withToken
 import io.kotest.matchers.shouldBe
